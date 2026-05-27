@@ -1,0 +1,16 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.dll
+*.exe
+*.pdb
+*.log
+
+# Visual Studio / Rider
+.idea/
+.vscode/
+
+# Excel / local files
+*.xlsx
