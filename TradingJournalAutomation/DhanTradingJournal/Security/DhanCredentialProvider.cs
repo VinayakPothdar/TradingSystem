@@ -38,6 +38,12 @@ public static class DhanCredentialProvider
     {
         Console.Write(prompt);
 
+        if (Console.IsInputRedirected)
+        {
+            var line = Console.ReadLine()?.Trim() ?? string.Empty;
+            return line;
+        }
+
         var chars = new List<char>();
 
         while (true)

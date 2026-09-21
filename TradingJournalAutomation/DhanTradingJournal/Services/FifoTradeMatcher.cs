@@ -16,6 +16,13 @@ public class FifoTradeMatcher
             {
                 if (execution.TransactionType == "BUY")
                 {
+                    // Dhan represents an equity bonus credit as a zero-price BUY.  It is not
+                    // a new trade with a zero cost: its quantity belongs to the shares that
+                    // earned the bonus.  Blend it into the open lots so performance metrics
+                    // (P&L, max profit and max loss) describe the economic position.
+                    if (IsBonusShareCredit(execution) && ApplyBonusToOpenLots(buyQueue, execution))
+                        continue;
+
                     buyQueue.Enqueue(Clone(execution));
                     continue;
                 }
@@ -28,6 +35,65 @@ public class FifoTradeMatcher
         }
 
         return ConsolidateSplitExits(matchedTrades);
+    }
+
+    private static bool IsBonusShareCredit(TradeExecution execution) =>
+        execution.Price == 0 &&
+        execution.Stt == 0 &&
+        execution.Brokerage == 0 &&
+        execution.ExchangeCharges == 0 &&
+        execution.StampDuty == 0 &&
+        execution.ServiceTax == 0;
+
+    private static bool ApplyBonusToOpenLots(
+        Queue<TradeExecution> buyQueue,
+        TradeExecution bonus)
+    {
+        if (buyQueue.Count == 0 || bonus.Quantity <= 0)
+            return false;
+
+        var openLots = buyQueue.ToList();
+        var openQuantity = openLots.Sum(lot => lot.Quantity);
+        if (openQuantity <= 0)
+            return false;
+
+        // Allocate whole bonus shares in proportion to the open lots.  Any
+        // rounding residue goes to the lots with the largest fractional claim.
+        var allocations = new int[openLots.Count];
+        var remainders = new decimal[openLots.Count];
+
+        for (var index = 0; index < openLots.Count; index++)
+        {
+            var exactBonus = (decimal)openLots[index].Quantity * bonus.Quantity / openQuantity;
+            allocations[index] = (int)Math.Floor(exactBonus);
+            remainders[index] = exactBonus - allocations[index];
+        }
+
+        var remaining = bonus.Quantity - allocations.Sum();
+        foreach (var index in Enumerable.Range(0, openLots.Count)
+                     .OrderByDescending(index => remainders[index])
+                     .ThenBy(index => index)
+                     .Take(remaining))
+        {
+            allocations[index]++;
+        }
+
+        for (var index = 0; index < openLots.Count; index++)
+        {
+            if (allocations[index] == 0)
+                continue;
+
+            var originalQuantity = openLots[index].Quantity;
+            var adjustedQuantity = originalQuantity + allocations[index];
+
+            // Keep the total acquisition cost of the original lot unchanged.
+            openLots[index].Price *= (decimal)originalQuantity / adjustedQuantity;
+            openLots[index].Quantity = adjustedQuantity;
+        }
+
+        Console.WriteLine(
+            $"  Applied bonus credit for {bonus.Symbol}: {bonus.Quantity} shares across {openLots.Count} open lot(s).");
+        return true;
     }
 
     private static void MatchSellExecution(

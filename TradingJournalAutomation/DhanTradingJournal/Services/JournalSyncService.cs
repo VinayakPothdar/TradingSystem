@@ -33,6 +33,7 @@ public class JournalSyncService
         _excelExportService.SyncTrades(allExecutions);
         _excelExportService.ExportMatchedTrades(matchedTrades);
         _excelExportService.BackfillRMultipleFormulas();
+        _excelExportService.EnsureStatsSheets();
     }
 
     private static void PrintSummary(IEnumerable<Models.MatchedTrade> matchedTrades)

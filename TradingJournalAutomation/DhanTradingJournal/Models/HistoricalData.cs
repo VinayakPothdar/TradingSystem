@@ -14,6 +14,8 @@ public class ScreenerInstrument
 {
     public string SecurityId { get; set; } = string.Empty;
     public string Symbol { get; set; } = string.Empty;
+    public string YahooSymbol { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public string Industry { get; set; } = string.Empty;
     public string ExchangeSegment { get; set; } = "NSE_EQ";
 }

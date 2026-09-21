@@ -12,5 +12,15 @@ obj/
 .idea/
 .vscode/
 
-# Excel / local files
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Excel / local files / data
 *.xlsx
+*.csv
+
+# Track project watchlists and docs
+!TradingJournalAutomation/DhanTradingJournal/Data/Watchlists/*.csv
+!ai-docs/*.xlsx

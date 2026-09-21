@@ -8,11 +8,11 @@ public class StockScreener
     private const int BaseWindowDays = 30;
     private const int TrendWindowDays = 60;
 
-    private readonly IDhanClient _dhanClient;
+    private readonly IHistoricalDataProvider _historicalDataProvider;
 
-    public StockScreener(IDhanClient dhanClient)
+    public StockScreener(IHistoricalDataProvider historicalDataProvider)
     {
-        _dhanClient = dhanClient;
+        _historicalDataProvider = historicalDataProvider;
     }
 
     public async Task<StockScreenResult> ScreenStock(ScreenerInstrument instrument)
@@ -26,9 +26,8 @@ public class StockScreener
         var to = DateTime.Today;
         var from = to.AddDays(-LookbackDays);
 
-        var candles = await _dhanClient.GetDailyCandles(
-            instrument.SecurityId,
-            instrument.ExchangeSegment,
+        var candles = await _historicalDataProvider.GetDailyCandles(
+            instrument,
             from,
             to);
 

@@ -1,0 +1,904 @@
+## 1. The strategy in one sentence
+
+Your current core idea is:
+
+> **Strong stock → healthy correction → support/consolidation → higher-low/base confirmation → breakout/continuation**
+
+The biggest conceptual shift is that **the EMA is no longer considered the edge**. It is primarily a tool for identifying *where* a correction is happening. The actual edge is the **quality of the structure/base that develops afterward**. 
+
+Your own key line captures this perfectly:
+
+**“The EMA doesn’t create the trade — the base does.”**
+
+---
+
+# 2. How your strategy evolved
+
+### Phase 1 — 200 EMA strategy
+
+Originally, the idea was very simple:
+
+**Strong stock → ATH/LTH → pullback toward 200 EMA → support → continuation**
+
+The 200 EMA was the dominant criterion.
+
+The problem you discovered through chart study was that **many genuinely strong stocks never pull back all the way to 200 EMA**. Some respect the 50 EMA, and exceptional leaders can even respect the 20 EMA. 
+
+### Phase 2 — Pullback depth matters
+
+You then realized that different stocks have different pullback characteristics:
+
+* Super leaders → 20 EMA
+* Healthy leaders → 50 EMA
+* Deeper corrections → 200 EMA
+
+So instead of asking:
+
+> “Did it reach 200 EMA?”
+
+you started asking:
+
+> “Is this a healthy correction in a strong stock?”
+
+That's a much more flexible framework. 
+
+### Phase 3 — Base formation became the real edge
+
+This was probably the **biggest evolution**.
+
+You noticed that merely reaching an EMA isn't enough.
+
+The stock needs to **calm down after the correction**.
+
+The characteristics you repeatedly identified were:
+
+* Tight consolidation
+* Range contraction
+* Declining volume
+* Higher lows
+* Controlled candles
+* Calm price action
+* Multiple support holds
+
+This led to the realization that you're really trying to identify **where price starts accepting value after a correction**. 
+
+### Phase 4 — Confluence
+
+You then started combining multiple pieces of evidence:
+
+**EMA + R→S + psychological level + tight base + sector strength + market strength**
+
+Rather than saying:
+
+> “200 EMA = buy”
+
+you're effectively saying:
+
+> “Several independent pieces of evidence are telling me that demand is returning here.”
+
+
+
+### Phase 5 — Market regime awareness
+
+Another major improvement was recognizing that the setup isn't equally effective in every market.
+
+It works better during:
+
+* Bullish phases
+* Strong sector rotations
+* Healthy market conditions
+* Trending environments
+
+And worse during:
+
+* Choppy markets
+* Weak breadth
+* Sideways phases
+* Late-stage euphoric moves
+
+So your system evolved from an **always-active strategy** into a **market-condition-dependent strategy**. 
+
+---
+
+# 3. Your current stock-selection philosophy
+
+You're looking for **leaders rather than laggards**.
+
+### Preferred characteristics
+
+A candidate should generally have:
+
+* Recent/near ATH
+* Strong relative strength
+* Strong sector
+* Clean prior uptrend
+* Healthy structure
+* Evidence of institutional participation
+* Not be excessively extended
+
+The earlier version used roughly **20–25% from ATH** as a filter. 
+
+The more formal Level-3 version specifically defines the swing strategy around a **recent 52-week ATH**, while the positional strategy allows an ATH within the previous year. 
+
+The basic philosophy is:
+
+**Buy strength after a controlled correction—not weakness simply because it looks cheap.**
+
+---
+
+# 4. Pullback framework
+
+A pullback itself doesn't qualify as a trade.
+
+You're looking for a **healthy correction**.
+
+Potential support areas include:
+
+* 20 EMA
+* 50 EMA
+* 100 EMA
+* 200 EMA
+* Previous breakout level
+* Resistance → Support
+* Psychological price levels
+
+The later version explicitly adds **100 EMA** to the possible contextual zones. 
+
+### What you don't want
+
+Avoid situations showing:
+
+* Vertical collapse
+* Huge impulsive red candles
+* Distribution volume
+* Panic selling
+* Weak reclaim attempts
+* Highly volatile/broken structure
+
+The distinction is important:
+
+**Correction ≠ trend failure.**
+
+You want evidence that the trend is correcting rather than completely breaking.
+
+---
+
+# 5. Psychological levels
+
+You've identified round numbers as an additional support/consolidation factor.
+
+Examples:
+
+* ₹100
+* ₹500
+* ₹1,000
+* ₹2,000
+
+The strongest situation is when multiple factors overlap:
+
+**Round number + EMA + previous breakout**
+
+This is another example of your broader move toward **confluence rather than single-indicator decisions**. 
+
+---
+
+# 6. Base formation — the heart of the strategy
+
+This is now the most important part.
+
+Your framework is essentially looking for:
+
+**Correction → price stabilizes → volatility contracts → demand begins defending higher prices → breakout**
+
+A good base tends to have:
+
+* Tight range
+* Volatility contraction
+* Declining volume
+* Sideways movement
+* Gradual higher lows
+* Multiple support holds
+* Calm candles
+* No aggressive rejection
+
+You specifically emphasize that **not all bases are equal**. A tight, controlled base near important support is considered much higher quality than a wide, messy, volatile base. 
+
+---
+
+# 7. The newest refinement: W-shaped base / higher-low entry
+
+This is probably the most important **current upgrade** in the playbook.
+
+Your refined trigger isn't simply:
+
+> “Price reached 200 EMA and formed a base.”
+
+It's more specific:
+
+### Step 1
+
+Price reaches an important support zone:
+
+**200 EMA/WEMA / R→S / major support**
+
+### Step 2
+
+It forms a W-shaped structure or shallow cup-with-handle.
+
+### Step 3
+
+You **do not buy the first bounce**.
+
+### Step 4
+
+You wait for the second low—the **higher low/handle**.
+
+### Step 5
+
+The higher low becomes the actual confirmation that demand is defending the stock.
+
+You prefer a relatively shallow handle, roughly **≤50% retracement of the bounce**.
+
+The logic is excellent:
+
+> First touch proves nothing.
+> Bounce suggests demand.
+> Higher low demonstrates that buyers are willing to defend at a better price.
+
+
+
+This is a significant refinement because it reduces the temptation to **bottom-fish**.
+
+---
+
+# 8. Volume: there are actually two versions in your document
+
+This is worth highlighting because the playbook contains an evolution here.
+
+### Earlier framework
+
+You observed:
+
+**Breakout → high volume
+Pullback → volume contraction
+New breakout → volume expansion**
+
+And considered this contraction/expansion cycle evidence of institutional activity. 
+
+### Current Level-3 framework
+
+The refined entry deliberately says:
+
+**“No volume filter, by design.”**
+
+The reason is to preserve simplicity and make the core system primarily **price/structure based**. 
+
+So the latest version effectively treats volume as **research/contextual information rather than a mandatory entry parameter**.
+
+That's an important distinction.
+
+---
+
+# 9. Entry philosophy
+
+Your philosophy has shifted from trying to catch the bottom to waiting for confirmation.
+
+You don't need to predict:
+
+> “This is THE bottom.”
+
+Instead:
+
+**Support → stabilization → higher low/base → momentum returns → entry**
+
+Your preferred triggers are:
+
+* Breakout from tight base
+* Strong closing candle
+* Higher-low confirmation
+* Reclaim after consolidation
+* Confirmation around support
+
+The goal is to enter **after uncertainty has reduced**, not at maximum uncertainty. 
+
+---
+
+# 10. Swing vs positional strategy
+
+Your Level-3 playbook now clearly separates the two.
+
+|                | Swing              | Positional         |
+| -------------- | ------------------ | ------------------ |
+| Timeframe      | Daily              | Weekly             |
+| ATH            | Recent 52-week ATH | ATH within ~1 year |
+| Pullback       | 200 EMA / support  | 200 WEMA           |
+| R→S            | Required           | Required           |
+| Sector         | Top 3 strongest    | Supporting factor  |
+| SL             | ~4–6%              | ~8–10%             |
+| Holding period | ~2 weeks–2 months  | ~6–12 months       |
+
+
+
+The **same structural entry philosophy** applies to both, but the timeframe and risk parameters differ.
+
+---
+
+# 11. Risk management
+
+Your philosophy here is very clear:
+
+**Capital protection comes first.**
+
+Core rules:
+
+* Predefined stop
+* Controlled position sizing
+* No revenge trading
+* No overtrading
+* Accept losses
+* Focus on quality over quantity
+
+Your earlier framework says the stop should generally be below the base low. 
+
+The Level-3 version formalizes risk at approximately:
+
+* **Swing:** 4–6%
+* **Positional:** 8–10%
+
+---
+
+# 12. Your biggest change in exits: let winners run
+
+This is one of the strongest improvements in the entire document.
+
+Previously:
+
+**Fixed 2R exit**
+
+Now:
+
+**50% at 2R → trail remaining 50%**
+
+The philosophy is:
+
+> **Win big, lose small.**
+
+You don't need an extremely high win rate if occasional winners become significantly larger.
+
+The system therefore isn't just trying to improve **entry accuracy**. It's trying to improve the **distribution of returns** by allowing exceptional winners to continue. 
+
+---
+
+# 13. Your current trailing mechanism
+
+The latest version gives a specific trailing method:
+
+After reaching 2R:
+
+1. Book 50%.
+2. Wait for the next base.
+3. Trail the remaining position using:
+
+**Base low − 0.5 × ATR%**
+
+Example given:
+
+If ATR% = 5%:
+
+**Trailing SL = 2.5% below the base low.**
+
+This is a much more structural trailing method than simply using a fixed percentage. 
+
+---
+
+# 14. Positional pyramiding
+
+You have also introduced a more advanced idea for the **positional strategy only**.
+
+After the trade reaches 2R:
+
+* New base forms
+* Base holds
+* Add 50% of the remaining quantity
+* If the base breaks, reduce/cut the position
+
+The original and additional position use a **common trailing SL**.
+
+However, your document correctly identifies an unresolved risk:
+
+> There is currently **no maximum number of adds**.
+
+You have explicitly flagged this as something that needs a maximum exposure-per-stock rule before significant capital scaling. 
+
+That's an important open item.
+
+---
+
+# 15. Re-entry philosophy
+
+Another significant psychological improvement:
+
+**Stop-loss ≠ stock is bad.**
+
+Instead:
+
+**Stop-loss = this particular setup failed.**
+
+If the stock later creates a completely new valid structure:
+
+**New base + higher low + valid setup → re-entry can be considered.**
+
+The re-entry is treated as an entirely new trade, not as an attempt to “recover” the previous loss. 
+
+This is essentially moving from **ego-based trading to probabilistic trading**.
+
+---
+
+# 16. Earnings filter — currently a hypothesis
+
+You've added earnings, but importantly, **you have not allowed earnings to become the strategy itself.**
+
+Your current philosophy:
+
+### Technical setup = primary
+
+### Earnings = conviction filter
+
+If earnings are coming within roughly **7–10 trading days**, you want to avoid fresh entries because of event risk.
+
+If results were recently declared:
+
+* Good results + technical setup intact → potentially higher conviction
+* Weak results → lower conviction / skip
+
+But earnings **never override technicals or risk management**. 
+
+You have four hypotheses you want to validate through your 30-trade retrospective:
+
+* Good earnings + valid setup may improve expectancy.
+* Avoiding pre-earnings entries may reduce unnecessary volatility.
+* Good earnings + correction to 200 EMA may produce better opportunities.
+* Repeated post-earnings failures may indicate market rejection of the earnings story.
+
+And importantly:
+
+**It becomes a hard rule only if the data proves it improves win rate, average R, drawdown, or expectancy.**
+
+That's a very good research mindset.
+
+---
+
+# 17. Your 30-trade risk scaling framework
+
+Your current challenge is deliberately conservative.
+
+You are running:
+
+**30 trades at fixed ₹1,000 risk per trade (1R).**
+
+The document describes this as roughly **0.5% of ~₹2L active capital**. 
+
+After each 30-trade block:
+
+**30 trades → deep retrospective → validate edge → increase risk/capital**
+
+The planned progression is:
+
+* Move toward **1% risk**
+* Increase active capital by approximately ₹1–2L
+* Start another 30-trade block
+* Re-evaluate
+
+The crucial principle:
+
+> **Never scale capital on an unvalidated edge.**
+
+Each cycle has to earn the next level of size.
+
+---
+
+# 18. Idle capital philosophy
+
+Your unused capital is intended to remain productive rather than sitting completely idle.
+
+The framework says approximately:
+
+**₹2–3L → liquid funds / LiquidBees**
+
+When a valid setup appears, capital can be redeployed.
+
+You explicitly don't want:
+
+* MTF
+* Pledging
+* Unnecessary leverage
+
+So the strategy is designed around **cash equity and controlled risk**, not leverage-driven returns. 
+
+---
+
+# 19. Options strategy — deliberately parked
+
+You've explored:
+
+* NIFTY iron condors
+* Short strangles
+* Different expiries
+* Live Dhan data
+
+Your conclusion was essentially:
+
+**Don't pursue it right now.**
+
+Your research showed the required breakeven win rate was roughly **80–93%**, depending on structure, while the platform's probability of profit was consistently below that requirement by around **8–11 percentage points**.
+
+Your conclusion was negative expected value under the tested conditions.
+
+The document also attributes this partly to the relatively low India VIX environment.
+
+So:
+
+**Swing + positional = core system**
+
+**Options = parked experiment, not a third pillar.** 
+
+That's a very important discipline decision: you're resisting the temptation to keep adding strategies.
+
+---
+
+# 20. Psychology and execution
+
+Interestingly, your document considers the psychological evolution almost as important as the technical evolution.
+
+You've identified improvements in:
+
+* Less panic exiting
+* Better tolerance of pullbacks
+* Less attachment to P&L
+* More patience
+* Less need to monitor constantly
+* More probabilistic thinking
+* Greater ability to hold winners
+
+One particularly important observation is that you can now tolerate a trade moving from something like **+3R back toward breakeven** without the same emotional disruption. 
+
+That's directly connected to your new trailing/winner philosophy.
+
+---
+
+# 21. Stop micromanaging
+
+This has become one of your explicit execution goals.
+
+Your observation:
+
+**Constant monitoring → emotional interference → premature decisions.**
+
+Instead:
+
+* Define the rules before entering.
+* Give the trade room.
+* Don't react to every candle.
+* Don't constantly calculate P&L.
+* Let the structure determine whether you're right or wrong.
+
+The objective is to make the trade behave according to the **system**, rather than according to your emotions on any particular day. 
+
+---
+
+# 22. Trend-stage awareness
+
+You're consciously trying to avoid late-stage euphoric moves.
+
+Your framework divides trends into:
+
+### Stage 1
+
+Accumulation
+
+### Stage 2
+
+Strong uptrend — **best trading phase**
+
+### Stage 3
+
+Distribution/exhaustion
+
+Your strategy is primarily designed for **Stage 2**.
+
+Warning signs of a late-stage trap include:
+
+* Stock already up several hundred percent
+* Increasingly deep pullbacks
+* Multiple breakout failures
+* Wide/volatile bases
+
+If these appear, you want to avoid new entries. 
+
+---
+
+# 23. Your research philosophy
+
+This is perhaps the most mature part of the playbook.
+
+You explicitly state:
+
+> **One observation does not create a rule.**
+
+A behaviour becomes meaningful only after it appears repeatedly across:
+
+* Multiple stocks
+* Multiple sectors
+* Different market conditions
+
+That means you're trying to avoid **curve-fitting your strategy around a few attractive charts**.
+
+You're treating your trading system almost like an ongoing research project:
+
+**Observation → hypothesis → trade data → retrospective → validation → rule**
+
+rather than:
+
+**Observation → immediate rule**
+
+
+
+---
+
+# 24. What your strategy has become
+
+The original strategy was basically:
+
+**ATH + 200 EMA**
+
+The current system is much broader:
+
+### MARKET
+
+Is the market conducive to trend-following?
+
+↓
+
+### LEADERSHIP
+
+Is this actually a strong stock/sector?
+
+↓
+
+### TREND
+
+Is it in a healthy Stage-2-type trend?
+
+↓
+
+### CORRECTION
+
+Has it corrected in a controlled manner?
+
+↓
+
+### LOCATION
+
+Is there meaningful support—EMA/R→S/psychological level?
+
+↓
+
+### STRUCTURE
+
+Has a tight base/W-pattern/higher low formed?
+
+↓
+
+### CONFIRMATION
+
+Has demand actually demonstrated itself?
+
+↓
+
+### ENTRY
+
+Breakout / momentum confirmation
+
+↓
+
+### RISK
+
+Predefined SL + controlled position size
+
+↓
+
+### MANAGEMENT
+
+50% at 2R + trail the rest
+
+↓
+
+### RESEARCH
+
+Journal → review → validate → refine
+
+That's a **process**, rather than simply an indicator setup.
+
+---
+
+# 25. The biggest lessons from the whole document
+
+If I compress the entire playbook into the **10 most important lessons**, I'd say:
+
+1. **The 200 EMA is not the edge.**
+2. **Strong stocks are preferable to cheap/weak stocks.**
+3. **The quality of the correction matters more than the exact EMA touched.**
+4. **The base is the central edge.**
+5. **The higher low is an important confirmation against bottom-fishing.**
+6. **Confluence is stronger than any individual indicator.**
+7. **Market and sector conditions matter.**
+8. **Risk management determines survival; winner management determines portfolio growth.**
+9. **A stop-out invalidates a setup, not necessarily the stock.**
+10. **New observations should be validated before becoming permanent rules.**
+
+---
+
+# 26. Your current system in one compact checklist
+
+If you wanted to put the whole thing on one screen before taking a trade:
+
+### A. MARKET
+
+* [ ] Index structure healthy
+* [ ] Breakouts working
+* [ ] No broad panic/chop
+
+### B. STOCK
+
+* [ ] Near/recent ATH
+* [ ] Strong relative strength
+* [ ] Strong sector
+* [ ] Clean prior uptrend
+* [ ] Not obviously late-stage/euphoric
+
+### C. CORRECTION
+
+* [ ] Controlled correction
+* [ ] Major support nearby
+* [ ] EMA / R→S / psychological level confluence
+* [ ] No vertical collapse/distribution
+
+### D. BASE
+
+* [ ] Tight consolidation
+* [ ] Volatility contracting
+* [ ] Higher low
+* [ ] W-pattern / shallow cup-handle structure
+* [ ] No sloppy/wide base
+
+### E. ENTRY
+
+* [ ] Don't buy first bounce
+* [ ] Higher low confirmed
+* [ ] Breakout/confirmation occurs
+* [ ] Risk defined before entry
+
+### F. MANAGEMENT
+
+* [ ] 50% at 2R
+* [ ] Trail remaining 50%
+* [ ] Don't micromanage
+* [ ] Don't panic during normal pullbacks
+
+### G. AFTER TRADE
+
+* [ ] Journal
+* [ ] Record execution quality
+* [ ] Track runner behaviour
+* [ ] Review after 30 trades
+* [ ] Only then consider changing/scaling the system
+
+---
+
+## The most important overall takeaway
+
+Your strategy has gone through a pretty meaningful transformation:
+
+**Old thinking:**
+
+> “A strong stock pulled back to the 200 EMA. That's my setup.”
+
+**Current thinking:**
+
+> “A strong stock in a supportive market has undergone a healthy correction, reached an important support area, demonstrated demand through a controlled base/higher low, and is now showing continuation potential.”
+
+That's a much more **structural, probabilistic and research-driven** system.
+
+And the final philosophy in your document is actually very simple:
+
+**Trend + Behaviour + Volatility contraction + Execution discipline + Risk management.** 
+
+The one thing I'd especially keep in mind going forward is that the document contains **some historical versions alongside the latest Level-3 rules**. So if you're treating this as your *actual live playbook*, the next useful step would be to separate **“current rules” from “research observations / historical evolution”** so you don't accidentally mix an old rule (for example, mandatory volume confirmation or fixed 2R exit) with the newer rule set.
+
+
+My Major Observations
+## Philosophy
+Markets are directionally unpredictable — no one can call tops or bottoms reliably. Edge comes from **trading structure, not narrative**: an average-looking stock in a valid technical setup outperforms a "clean," well-known name without one. Setups arrive in **phases, not evenly** — expect clusters of opportunity (often right after sharp, news-driven market corrections, when genuine bases form) alternating with quiet stretches where few valid setups exist. Quiet periods are the system working correctly, not a sign it's broken.
+
+---
+
+## 1. Swing Strategy (Daily Timeframe)
+**Entry criteria (all must align):**
+- Recent 52-week ATH
+- Pullback to the 200 EMA
+- Basing/consolidation at that zone
+- Previous resistance now acting as support (R→S)
+- Sector ranks in the **top 3 strongest**
+
+**Risk:** SL 4-6% | **Hold:** ~2 weeks to 1-2 months
+
+## 2. Positional Strategy (Weekly Timeframe)
+**Entry criteria:**
+- ATH within the last 1 year
+- Pullback to the 200 WEMA
+- Resistance-turned-support (R→S) confirmation
+
+**Risk:** SL 8-10% | **Hold:** 6-12 months
+
+*(Sector strength currently applies formally to swing; treated as a supporting nuance rather than a hard filter for positional.)*
+
+---
+
+## 3. The Refined Entry Trigger (Core Edge, applies to both)
+Not just "a base at support" — specifically:
+- Price reaches key support (200 EMA/WEMA, R→S zone)
+- Forms a **W-shaped base or shallow cup-with-handle**
+- **Do not buy the first bounce or the absolute low** (no bottom-fishing)
+- Wait for the **second, higher low** (the "handle") after the initial bounce — this is the actual entry trigger
+- **Prefer shallow, tight handles** (roughly ≤50% retracement of the bounce) — tighter stops, better risk-reward, and a stronger signal than a deep, sloppy pullback
+- **No volume filter, by design** — kept purely price/structure-based to preserve system simplicity
+
+**Logic:** the first touch of support proves nothing. The bounce shows *possible* demand. The higher low proves demand is being *defended* at a better price — that's the real confirmation.
+
+---
+
+## 4. Exit & Trailing Mechanism (both strategies)
+- Book **50% at 2R**
+- Trail the remaining 50%: wait for the next base to form, move SL to **base low − (0.5 × ATR%)**
+  *(e.g., ATR% = 5 → SL sits 2.5% below the base low)*
+- **Positional-only pyramiding:** if a new base forms after the 2R mark and holds, **add 50% of the remaining quantity**; if the base breaks, cut the position instead
+  - One common trailing SL applies to the full position (original + adds)
+  - No cap on number of adds currently — **flagged as an open risk**; needs a max-exposure-per-stock rule before scaling capital meaningfully
+
+---
+
+## 5. Earnings Awareness (Confirmation Layer, Not a Trigger)
+- Stay cautious about fresh entries too close to a stock's upcoming results (event risk)
+- If earnings are already declared and genuinely good, that **boosts conviction** on a trade that already meets technical criteria
+- Earnings never substitute for the technical setup — confirmation only
+- **Open experiment:** validate in the 30-trade retro whether earnings-aligned entries actually improve outcomes; only formalize into "v1.1" of the strategy if the data supports it
+
+---
+
+## 6. Risk & Capital Management
+- Currently running a **30-trade challenge** at fixed ₹1,000 risk (1R) per trade (~0.5% of ~₹2L active capital)
+- After each 30-trade block: **deep retro**, then move to **1% risk** and scale capital by ₹1-2L before starting the next block
+- Never scale capital on an unvalidated edge — each cycle re-earns the next size-up
+- Idle capital (~₹2-3L) parked in **liquid funds / Liquidbees**, redeployed directly for new entries when a setup appears — no MTF, no pledging (pledging doesn't work for equity delivery trades, only F&O/intraday)
+
+---
+
+## 7. Options Exploration (Parked)
+- Tested NIFTY iron condor / short strangle mechanics in depth using live Dhan data
+- Breakeven win rate required: 80-93% depending on structure; actual platform POP consistently fell short by 8-11 percentage points → **negative expected value** across every structure and expiry tested
+- Root cause: current India VIX (~13) is well below the 18-22 "sweet spot" premium sellers typically need
+- **Decision: not pursuing for now.** Swing/positional remains the core edge. May revisit only if VIX regime shifts meaningfully and after further study — not a live third pillar
+
+---
+
+## 8. Execution & Behavioral Improvement Areas (Self-Identified)
+1. **Stop micromanaging** — give trades space and time to let the trend play out, rather than reacting to daily noise
+2. **Chase bigger RR / bigger runners** — this is what actually moves the portfolio curve, more than win rate
+3. **Improve journal quality** — make it more insightful, not just a log of outcomes
+4. **Re-entry** — if stopped out but the stock later reforms a valid setup (new base/higher-low), re-entering is on the table; not yet a formal rule
+5. Track **post-2R runner behavior** (how far winners actually run before reversing) to properly calibrate trailing distance over time
+
+---
+
+## Guiding Principle
+**Keep it simple.** New observations (like the W-pattern refinement) get folded in as **upgrades to existing criteria**, never as new standalone parameters. The system's strength is that it's simple enough to execute consistently, diagnose clearly when something goes wrong, and stick with through a normal losing streak — protect that above all else.

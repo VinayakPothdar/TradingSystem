@@ -11,4 +11,9 @@
     <PackageReference Include="ClosedXML" Version="0.105.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Data\Watchlists\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Data\Historical\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

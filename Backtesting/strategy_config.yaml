@@ -1,0 +1,114 @@
+# ==============================================================================
+# SWING PULLBACK STRATEGY CONFIGURATION
+# Modify any value below and re-run the backtest to evaluate new ideas instantly!
+# ==============================================================================
+
+# Strategy Metadata
+strategy_name: "Structural_Pullback_System"
+description: "Pullback to key EMA following fresh 52W ATH with volatility contraction base"
+
+# ------------------------------------------------------------------------------
+# 1. MOVING AVERAGE SUPPORT CONFIGURATION
+# ------------------------------------------------------------------------------
+# The primary moving average where support/bounce is expected:
+# Options: 200 (deep structural pullback), 50 (intermediate momentum pullback), 20 (super-leader)
+support_ema: 200
+
+# Primary trend filter:
+# When testing 50 EMA or 20 EMA, should the stock also be above 200 EMA (Stage 2 uptrend)?
+require_primary_trend_above_200: true
+
+# Touch tolerance zone around the Support EMA:
+# zone_tolerance_upper: touches within +2% of EMA count as entering the support zone
+# zone_tolerance_lower: maximum allowable penetration below EMA (-3%)
+zone_tolerance_upper: 0.02
+zone_tolerance_lower: -0.03
+
+# Approach direction:
+# true = price must approach EMA from ABOVE (pullback from ATH).
+# false = permits inverted approach from below (disqualified per autopsy).
+require_approach_from_above: true
+
+# ------------------------------------------------------------------------------
+# 2. ALL-TIME HIGH (ATH) / LEADERSHIP FILTER
+# ------------------------------------------------------------------------------
+# Number of trading days to look back for a fresh 52-week All-Time High:
+# For 200 EMA, 180 days is standard. For 50 EMA, 60-90 days is typical.
+ath_lookback_days: 180
+
+# Minimum days elapsed since the ATH (avoids buying peak before base forms):
+ath_min_age_days: 5
+
+# ------------------------------------------------------------------------------
+# 3. EXHAUSTION / BOUNCE COUNT FILTER
+# ------------------------------------------------------------------------------
+# Maximum number of touches/bounces allowed from the support EMA since the ATH:
+# 1 = Only the 1st test (Highest probability / A+ setup).
+# 2 = Allows 1st and 2nd test.
+# 3 = Allows 3rd test (demonstrated high failure rate in retro).
+max_allowed_bounces: 1
+
+# Window in trading days to group continuous touches into a single "bounce":
+bounce_cluster_window: 12
+
+# ------------------------------------------------------------------------------
+# 4. BASE CONSOLIDATION & ENTRY TRIGGER
+# ------------------------------------------------------------------------------
+# Base length in daily candles at or near the support EMA:
+base_min_candles: 4
+base_max_candles: 12
+
+# Require higher-low / W-pattern pivot:
+require_higher_low: true
+
+# Entry trigger method:
+# "breakout_base_high": Buy when price crosses highest high of the base consolidation.
+# "close_above_ema": Buy on first clean close above support EMA after touch.
+entry_trigger_method: "breakout_base_high"
+
+# ------------------------------------------------------------------------------
+# 5. BROADER MARKET (NIFTY) TIMING FILTER
+# ------------------------------------------------------------------------------
+# Only initiate swing trades when Nifty provides pullback/slingshot tailwind:
+enable_nifty_filter: true
+
+# Market condition options:
+# "pullback": Nifty is in short-term pullback (Nifty < 20 EMA or 5-day RSI < 50)
+# "above_200": Nifty simply trading above 200 EMA
+# "all": No market filter (trades taken regardless of Nifty)
+nifty_condition: "pullback"
+
+# ------------------------------------------------------------------------------
+# 6. RISK & POSITION SIZING
+# ------------------------------------------------------------------------------
+# Risk capital in INR per trade (1R):
+risk_per_trade_inr: 1000
+
+# Buffer below base low (as fraction of ATR, e.g. 0.3 * ATR):
+sl_atr_buffer: 0.3
+
+# Maximum allowable initial stop-loss percentage (e.g. 0.07 = 7% max risk):
+max_initial_sl_pct: 0.07
+
+# ------------------------------------------------------------------------------
+# 7. TRADE MANAGEMENT & PROFIT TARGETS
+# ------------------------------------------------------------------------------
+# Move SL to Breakeven when trade reaches this R-multiple:
+# 1.5 means at +1.5R, SL moves to Entry Price (eliminates round trips).
+breakeven_trigger_r: 1.5
+
+# First Target (T1):
+# R-multiple to take partial profit:
+target_1_r: 2.0
+
+# Portion of position to close at Target 1 (0.50 = 50%):
+target_1_size_pct: 0.50
+
+# Trailing strategy for remaining 50% runner:
+# "base_low": Trail to the low of each subsequent higher consolidation base.
+# "ema_20": Trail stop under the rising 20 EMA.
+# "atr_trail": Dynamic ATR trailing stop.
+runner_trailing_method: "base_low"
+
+# Maximum holding period in trading days (time-stop if trade goes nowhere):
+max_holding_days: 60
