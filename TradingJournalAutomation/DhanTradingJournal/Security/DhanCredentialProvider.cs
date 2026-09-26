@@ -19,7 +19,15 @@ public static class DhanCredentialProvider
             return new DhanCredentials();
         }
 
-        var accessToken = ReadSecret("Enter Dhan access token: ");
+        var accessToken =
+            Environment.GetEnvironmentVariable("DHAN_ACCESS_TOKEN") ??
+            Environment.GetEnvironmentVariable("DHAN_ACCESS_TOKEN", EnvironmentVariableTarget.User) ??
+            string.Empty;
+
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+            accessToken = ReadSecret("Enter Dhan access token: ");
+        }
 
         if (string.IsNullOrWhiteSpace(accessToken))
         {

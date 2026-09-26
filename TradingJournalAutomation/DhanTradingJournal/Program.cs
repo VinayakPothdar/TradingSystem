@@ -28,7 +28,7 @@ Console.WriteLine("  9 - Sync All Stocks (Nifty 500 Universe)");
 Console.WriteLine("  10 - Sync Both Indices + Traded Stocks");
 Console.Write("\nEnter choice (1-10): ");
 
-var choice = Console.ReadLine()?.Trim() ?? "4";
+var choice = args.Length > 0 ? args[0].Trim() : (Console.ReadLine()?.Trim() ?? "4");
 Console.WriteLine();
 
 try
@@ -59,8 +59,15 @@ try
         await screenerWorkflow.Run();
     }
 
+    if (choice is "5")
+    {
+        Console.WriteLine("\n[Full Run Step 2/3] Syncing latest daily candles for traded stocks...");
+        candleSyncService.RunSync("matched");
+    }
+
     if (choice is "4" or "5")
     {
+        Console.WriteLine("\n[Full Run Step 3/3] Running Swing Autopsy & Diagnostics...");
         excelExportService.BackfillRMultipleFormulas();
         var (results, summary) = tradeReviewService.RunReview("Swing");
         excelExportService.ExportTradeReview(results, summary, "TradeReview - Swing", "Swing Trading");
