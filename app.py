@@ -383,17 +383,6 @@ with tab1:
             sec_name = getattr(r, "sector_name", "Nifty 50")
             sec_status = getattr(r, "sector_status_label", "⚪ Sector Info N/A")
 
-            gtt_text = (
-                f"DHAN GTT ORDER:\n"
-                f"Symbol: {r.symbol}\n"
-                f"Sector: {ind_name} ({sec_name})\n"
-                f"Trigger Price: ₹{r.entry_price}\n"
-                f"Limit Price: ₹{round(r.entry_price * 1.003, 2)}\n"
-                f"Stop-Loss: ₹{r.stop_loss_price}\n"
-                f"Quantity: {r.quantity}\n"
-                f"Target (+2R): ₹{r.target_price}"
-            )
-
             st.markdown(
                 f"""
                 <div class="trade-card">
@@ -441,8 +430,6 @@ with tab1:
                 """,
                 unsafe_allow_html=True,
             )
-            with st.expander(f"📋 Copy GTT Parameters for {r.symbol}"):
-                st.code(gtt_text, language="text")
 
 # ==========================================
 # TAB 2: BACKTESTING HUB
