@@ -496,7 +496,7 @@ with tab2:
 # TAB 3: ALL SECTOR INDICES DETAIL
 # ==========================================
 with tab3:
-    st.subheader("All 17 Sector & Broad Market Indices Detail")
+    st.subheader(f"All {len(sector_regimes)} Sector & Broad Market Indices Detail")
     st.caption("Ranked by momentum relative to 50 DEMA:")
 
     for s in sorted(sector_regimes.values(), key=lambda x: x.pct_from_50_dema, reverse=True):

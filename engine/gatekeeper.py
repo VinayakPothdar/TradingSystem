@@ -16,14 +16,14 @@ INDUSTRY_TO_SECTOR = {
     "Capital Goods": ("Nifty Infrastructure", "^CNXINFRA"),
     "Healthcare": ("Nifty Pharma", "^CNXPHARMA"),
     "Automobile and Auto Components": ("Nifty Auto", "^CNXAUTO"),
-    "Consumer Services": ("Nifty FMCG", "^CNXFMCG"),
+    "Consumer Services": ("Nifty Consumption", "^CNXCONSUM"),
     "Fast Moving Consumer Goods": ("Nifty FMCG", "^CNXFMCG"),
     "Information Technology": ("Nifty IT", "^CNXIT"),
     "Chemicals": ("Nifty Pharma / Chemicals", "^CNXPHARMA"),
     "Metals & Mining": ("Nifty Metal", "^CNXMETAL"),
     "Power": ("Nifty Energy", "^CNXENERGY"),
     "Oil Gas & Consumable Fuels": ("Nifty Energy", "^CNXENERGY"),
-    "Consumer Durables": ("Nifty FMCG", "^CNXFMCG"),
+    "Consumer Durables": ("Nifty Consumption", "^CNXCONSUM"),
     "Services": ("Nifty Services", "^CNXINFRA"),
     "Construction": ("Nifty Infrastructure", "^CNXINFRA"),
     "Construction Materials": ("Nifty Infrastructure", "^CNXINFRA"),
@@ -127,6 +127,8 @@ def get_all_sector_regimes(df_all: pd.DataFrame) -> Dict[str, RegimeStatus]:
         "^CNXENERGY": "Nifty Energy",
         "^CNXINFRA": "Nifty Infrastructure",
         "^CNXPSE": "Nifty PSE",
+        "^CNXCONSUM": "Nifty Consumption",
+        "^CNXMNC": "Nifty MNC",
         "^NSEMDCP50": "Nifty Midcap 50",
         "NIFTYSMLCAP250": "Nifty Smallcap 250",
         "^CNX100": "Nifty 100",
@@ -136,7 +138,7 @@ def get_all_sector_regimes(df_all: pd.DataFrame) -> Dict[str, RegimeStatus]:
     regimes: Dict[str, RegimeStatus] = {}
     for ticker, name in sector_tickers.items():
         sub = df_all[df_all["Symbol"] == ticker]
-        if sub.empty:
+        if sub.empty or len(sub) < 50:
             sub = df_all[df_all["Symbol"] == ticker.replace("^", "")]
         if not sub.empty and len(sub) >= 50:
             status = evaluate_index_regime(sub, name, ticker)
