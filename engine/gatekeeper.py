@@ -1,35 +1,35 @@
 """
 Gatekeeper and Market Regime Module:
-Evaluates Nifty 50, Midcap, Bank Nifty, and Sector health relative to 50 DEMA and 200 EMA.
+Evaluates Nifty 50, Midcap, Bank Nifty, and 16 Sectoral Indices relative to 50 DEMA and 200 EMA.
 Calculates Gatekeeper Score (0 - 10), tracks underlying sector EMA status for every stock,
-and provides regime recommendations.
+and provides top-performing sector rankings.
 """
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 import pandas as pd
 from engine.indicators import compute_dema, compute_ema
 
 INDUSTRY_TO_SECTOR = {
-    "Financial Services": ("Nifty Financial", "^CNXFIN"),
-    "Capital Goods": ("Nifty Infra / Capital Goods", "^CNXINFRA"),
-    "Healthcare": ("Nifty Pharma / Healthcare", "^CNXPHARMA"),
+    "Financial Services": ("Nifty Financial Services", "NIFTY_FIN_SERVICE.NS"),
+    "Capital Goods": ("Nifty Infrastructure", "^CNXINFRA"),
+    "Healthcare": ("Nifty Pharma", "^CNXPHARMA"),
     "Automobile and Auto Components": ("Nifty Auto", "^CNXAUTO"),
-    "Consumer Services": ("Nifty FMCG / Services", "^CNXFMCG"),
+    "Consumer Services": ("Nifty FMCG", "^CNXFMCG"),
     "Fast Moving Consumer Goods": ("Nifty FMCG", "^CNXFMCG"),
     "Information Technology": ("Nifty IT", "^CNXIT"),
     "Chemicals": ("Nifty Pharma / Chemicals", "^CNXPHARMA"),
     "Metals & Mining": ("Nifty Metal", "^CNXMETAL"),
-    "Power": ("Nifty Energy / Power", "^CNXENERGY"),
-    "Oil Gas & Consumable Fuels": ("Nifty Energy / Oil & Gas", "^CNXENERGY"),
-    "Consumer Durables": ("Nifty Consumer Durables", "^CNXFMCG"),
+    "Power": ("Nifty Energy", "^CNXENERGY"),
+    "Oil Gas & Consumable Fuels": ("Nifty Oil & Gas", "NIFTY_OIL_AND_GAS.NS"),
+    "Consumer Durables": ("Nifty Consumer Durables", "NIFTY_CONSR_DURBL.NS"),
     "Services": ("Nifty Services", "^CNXSERVICE"),
-    "Construction": ("Nifty Infra / Construction", "^CNXINFRA"),
-    "Construction Materials": ("Nifty Infra / Materials", "^CNXINFRA"),
+    "Construction": ("Nifty Infrastructure", "^CNXINFRA"),
+    "Construction Materials": ("Nifty Infrastructure", "^CNXINFRA"),
     "Realty": ("Nifty Realty", "^CNXREALTY"),
-    "Telecommunication": ("Nifty Telecom", "^CNXINFRA"),
-    "Textiles": ("Nifty Textiles", "^CNXFMCG"),
+    "Telecommunication": ("Nifty Infrastructure", "^CNXINFRA"),
+    "Textiles": ("Nifty FMCG", "^CNXFMCG"),
     "Media Entertainment & Publication": ("Nifty Media", "^CNXMEDIA"),
     "Diversified": ("Nifty 50", "^NSEI"),
 }
@@ -113,33 +113,49 @@ def evaluate_index_regime(df: Optional[pd.DataFrame], name: str, symbol: str) ->
 
 
 def get_all_sector_regimes(df_all: pd.DataFrame) -> Dict[str, RegimeStatus]:
-    """Evaluates 50 DEMA and 200 EMA positions for all major sectoral indices."""
+    """Evaluates 50 DEMA and 200 EMA positions for all 16 major sectoral indices."""
     sector_tickers = {
         "^CNXAUTO": "Nifty Auto",
         "^CNXENERGY": "Nifty Energy",
-        "^CNXFIN": "Nifty Financial Services",
         "^CNXFMCG": "Nifty FMCG",
         "^CNXINFRA": "Nifty Infrastructure",
         "^CNXIT": "Nifty IT",
         "^CNXMEDIA": "Nifty Media",
         "^CNXMETAL": "Nifty Metal",
         "^CNXPHARMA": "Nifty Pharma",
+        "^CNXPSUBANK": "Nifty PSU Bank",
         "^CNXREALTY": "Nifty Realty",
         "^NSEBANK": "Nifty Bank",
-        "^NSEI": "Nifty 50",
-        "^NSMIDCP": "Nifty Midcap 150",
+        "NIFTY_FIN_SERVICE.NS": "Nifty Financial Services",
+        "NIFTY_CONSR_DURBL.NS": "Nifty Consumer Durables",
+        "NIFTY_OIL_AND_GAS.NS": "Nifty Oil & Gas",
+        "NIFTY_HEALTHCARE.NS": "Nifty Healthcare",
+        "NIFTY_PVT_BANK.NS": "Nifty Private Bank",
     }
     regimes: Dict[str, RegimeStatus] = {}
     for ticker, name in sector_tickers.items():
-        clean_sym = ticker.replace("^", "")
-        sub = df_all[df_all["Symbol"] == clean_sym]
+        sub = df_all[df_all["Symbol"] == ticker]
         if sub.empty:
-            sub = df_all[df_all["Symbol"] == ticker]
-        if not sub.empty:
+            sub = df_all[df_all["Symbol"] == ticker.replace("^", "")]
+        if not sub.empty and len(sub) >= 50:
             status = evaluate_index_regime(sub, name, ticker)
             if status:
                 regimes[ticker] = status
     return regimes
+
+
+def get_sector_leaderboard(sector_regimes: Dict[str, RegimeStatus]) -> Tuple[List[RegimeStatus], List[RegimeStatus], List[RegimeStatus]]:
+    """
+    Returns:
+    - top_3_leaders: Top 3 performing sectors relative to 50 DEMA
+    - sectors_above_50: All sectors currently trading above their 50 DEMA
+    - sectors_below_50: All sectors currently trading below their 50 DEMA
+    """
+    sorted_all = sorted(sector_regimes.values(), key=lambda s: s.pct_from_50_dema, reverse=True)
+    top_3 = sorted_all[:3]
+    above_50 = [s for s in sorted_all if s.is_above_50_dema]
+    below_50 = [s for s in sorted_all if not s.is_above_50_dema]
+    return top_3, above_50, below_50
 
 
 def get_stock_sector_info(
@@ -155,6 +171,13 @@ def get_stock_sector_info(
     sector_name, ticker = INDUSTRY_TO_SECTOR.get(industry, ("Nifty 50", "^NSEI"))
 
     regime = sector_regimes.get(ticker)
+    if not regime:
+        # Fallback search by clean symbol or name
+        for t, r in sector_regimes.items():
+            if ticker in t or r.index_name == sector_name:
+                regime = r
+                break
+
     if regime:
         if regime.is_above_50_dema:
             label = f"🟢 Above 50 DEMA ({regime.pct_from_50_dema:+.1f}%)"
@@ -175,10 +198,6 @@ def get_stock_sector_info(
 def compute_gatekeeper_score(indices_data: Dict[str, pd.DataFrame]) -> GatekeeperReport:
     """
     Computes unified Gatekeeper score (0 - 10) based on market indices.
-    Weights:
-    - Nifty 50: 40%
-    - Nifty Midcap: 40%
-    - Bank Nifty: 20%
     """
     breakdown = {}
 
