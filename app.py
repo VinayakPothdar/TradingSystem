@@ -22,6 +22,8 @@ from engine.gatekeeper import compute_gatekeeper_score, get_all_sector_regimes
 from engine.scanner import export_scan_to_json, run_full_scan
 from engine.telegram import format_telegram_digest, send_telegram_message
 
+APP_VERSION = "2.1"
+
 # Page Configuration for Mobile
 st.set_page_config(
     page_title="Swing Intelligence",
@@ -29,6 +31,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+# Invalidate stale session states across updates
+if st.session_state.get("app_version") != APP_VERSION:
+    st.session_state.clear()
+    st.session_state["app_version"] = APP_VERSION
 
 # Custom Styling for Mobile Dark Theme
 st.markdown(
@@ -145,6 +152,11 @@ with tab1:
     with col_btn2:
         send_tg = st.checkbox("📱 Also Push to Telegram", value=False)
 
+    # Invalidate if results missing new attributes
+    cached_results = st.session_state.get("scan_results", [])
+    if cached_results and not hasattr(cached_results[0], "industry"):
+        st.session_state.pop("scan_results", None)
+
     # State management for scan results
     if "scan_results" not in st.session_state or run_scan_btn:
         with st.spinner("Scanning Nifty 500 stocks across True ATH, DEMA pullbacks & Sectors..."):
@@ -161,7 +173,7 @@ with tab1:
 
     # Apply Grade filter
     if grade_filter == "APLUS_ONLY":
-        results = [r for r in results if r.grade == "A+"]
+        results = [r for r in results if getattr(r, "grade", "A") == "A+"]
 
     st.write(f"**Found {len(results)} qualifying setups:**")
 
@@ -169,13 +181,17 @@ with tab1:
         st.info("No stocks currently match the setup criteria. Market may be extended or in consolidation.")
     else:
         for r in results:
-            badge_class = "badge-a-plus" if r.grade == "A+" else "badge-a"
-            strat_label = "50 DEMA (₹1k)" if r.strategy_id == "50_DEMA" else "200 EMA (₹2k)"
+            badge_class = "badge-a-plus" if getattr(r, "grade", "A") == "A+" else "badge-a"
+            strat_id = getattr(r, "strategy_id", "50_DEMA")
+            strat_label = "50 DEMA (₹1k)" if strat_id == "50_DEMA" else "200 EMA (₹2k)"
+            ind_name = getattr(r, "industry", "General")
+            sec_name = getattr(r, "sector_name", "Nifty 50")
+            sec_status = getattr(r, "sector_status_label", "⚪ Sector Info N/A")
 
             gtt_text = (
                 f"DHAN GTT ORDER:\n"
                 f"Symbol: {r.symbol}\n"
-                f"Sector: {r.industry} ({r.sector_name})\n"
+                f"Sector: {ind_name} ({sec_name})\n"
                 f"Trigger Price: ₹{r.entry_price}\n"
                 f"Limit Price: ₹{round(r.entry_price * 1.003, 2)}\n"
                 f"Stop-Loss: ₹{r.stop_loss_price}\n"
@@ -189,15 +205,15 @@ with tab1:
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                         <div>
                             <span style="font-size: 1.3em; font-weight: bold; color: #58a6ff;">{r.symbol}</span>
-                            <span style="color: #8b949e; font-size: 0.9em; margin-left: 6px;">• <b>{r.industry}</b> ({r.sector_name})</span>
+                            <span style="color: #8b949e; font-size: 0.9em; margin-left: 6px;">• <b>{ind_name}</b> ({sec_name})</span>
                         </div>
                         <div>
-                            <span class="{badge_class}">{r.grade} {r.setup_type}</span>
-                            <span class="badge-respect">EMA Respect: {r.respect_score_pct}%</span>
+                            <span class="{badge_class}">{getattr(r, 'grade', 'A')} {getattr(r, 'setup_type', 'Base Contraction')}</span>
+                            <span class="badge-respect">EMA Respect: {getattr(r, 'respect_score_pct', 50)}%</span>
                         </div>
                     </div>
                     <div style="font-size: 0.88em; color: #8b949e; margin-bottom: 10px;">
-                        Sector EMA: <b>{r.sector_status_label}</b> • Strategy: <b>{strat_label}</b> • Pattern: <i>{r.pattern_summary}</i>
+                        Sector EMA: <b>{sec_status}</b> • Strategy: <b>{strat_label}</b> • Pattern: <i>{getattr(r, 'pattern_summary', '')}</i>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 12px;">
                         <div><b>Buy (Stop-Limit):</b> ₹{r.entry_price:,.2f}</div>
