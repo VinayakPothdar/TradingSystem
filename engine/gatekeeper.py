@@ -1,6 +1,6 @@
 """
 Gatekeeper and Market Regime Module:
-Evaluates Nifty 50, Midcap, Bank Nifty, and 16 Sectoral Indices relative to 50 DEMA and 200 EMA.
+Evaluates Nifty 50, Midcap, Bank Nifty, and all 17 Sectoral/Thematic Indices relative to 50 DEMA and 200 EMA.
 Calculates Gatekeeper Score (0 - 10), tracks underlying sector EMA status for every stock,
 and provides top-performing sector rankings.
 """
@@ -22,9 +22,9 @@ INDUSTRY_TO_SECTOR = {
     "Chemicals": ("Nifty Pharma / Chemicals", "^CNXPHARMA"),
     "Metals & Mining": ("Nifty Metal", "^CNXMETAL"),
     "Power": ("Nifty Energy", "^CNXENERGY"),
-    "Oil Gas & Consumable Fuels": ("Nifty Oil & Gas", "NIFTY_OIL_AND_GAS.NS"),
-    "Consumer Durables": ("Nifty Consumer Durables", "NIFTY_CONSR_DURBL.NS"),
-    "Services": ("Nifty Services", "^CNXSERVICE"),
+    "Oil Gas & Consumable Fuels": ("Nifty Energy", "^CNXENERGY"),
+    "Consumer Durables": ("Nifty FMCG", "^CNXFMCG"),
+    "Services": ("Nifty Services", "^CNXINFRA"),
     "Construction": ("Nifty Infrastructure", "^CNXINFRA"),
     "Construction Materials": ("Nifty Infrastructure", "^CNXINFRA"),
     "Realty": ("Nifty Realty", "^CNXREALTY"),
@@ -113,24 +113,25 @@ def evaluate_index_regime(df: Optional[pd.DataFrame], name: str, symbol: str) ->
 
 
 def get_all_sector_regimes(df_all: pd.DataFrame) -> Dict[str, RegimeStatus]:
-    """Evaluates 50 DEMA and 200 EMA positions for all 16 major sectoral indices."""
+    """Evaluates 50 DEMA and 200 EMA positions for all 17 sector and thematic indices."""
     sector_tickers = {
-        "^CNXAUTO": "Nifty Auto",
-        "^CNXENERGY": "Nifty Energy",
-        "^CNXFMCG": "Nifty FMCG",
-        "^CNXINFRA": "Nifty Infrastructure",
-        "^CNXIT": "Nifty IT",
-        "^CNXMEDIA": "Nifty Media",
-        "^CNXMETAL": "Nifty Metal",
-        "^CNXPHARMA": "Nifty Pharma",
-        "^CNXPSUBANK": "Nifty PSU Bank",
-        "^CNXREALTY": "Nifty Realty",
         "^NSEBANK": "Nifty Bank",
+        "^CNXPSUBANK": "Nifty PSU Bank",
         "NIFTY_FIN_SERVICE.NS": "Nifty Financial Services",
-        "NIFTY_CONSR_DURBL.NS": "Nifty Consumer Durables",
-        "NIFTY_OIL_AND_GAS.NS": "Nifty Oil & Gas",
-        "NIFTY_HEALTHCARE.NS": "Nifty Healthcare",
-        "NIFTY_PVT_BANK.NS": "Nifty Private Bank",
+        "^CNXIT": "Nifty IT",
+        "^CNXAUTO": "Nifty Auto",
+        "^CNXPHARMA": "Nifty Pharma",
+        "^CNXFMCG": "Nifty FMCG",
+        "^CNXMETAL": "Nifty Metal",
+        "^CNXREALTY": "Nifty Realty",
+        "^CNXENERGY": "Nifty Energy",
+        "^CNXINFRA": "Nifty Infrastructure",
+        "^CNXPSE": "Nifty PSE",
+        "^NSEMDCP50": "Nifty Midcap 50",
+        "NIFTYSMLCAP250": "Nifty Smallcap 250",
+        "^CNX100": "Nifty 100",
+        "^CNX200": "Nifty 200",
+        "^CRSLDX": "Nifty 500",
     }
     regimes: Dict[str, RegimeStatus] = {}
     for ticker, name in sector_tickers.items():
@@ -144,18 +145,24 @@ def get_all_sector_regimes(df_all: pd.DataFrame) -> Dict[str, RegimeStatus]:
     return regimes
 
 
-def get_sector_leaderboard(sector_regimes: Dict[str, RegimeStatus]) -> Tuple[List[RegimeStatus], List[RegimeStatus], List[RegimeStatus]]:
+def get_sector_leaderboard(
+    sector_regimes: Dict[str, RegimeStatus]
+) -> Tuple[List[RegimeStatus], List[RegimeStatus], List[RegimeStatus], List[RegimeStatus]]:
     """
     Returns:
     - top_3_leaders: Top 3 performing sectors relative to 50 DEMA
     - sectors_above_50: All sectors currently trading above their 50 DEMA
-    - sectors_below_50: All sectors currently trading below their 50 DEMA
+    - sectors_above_200: All sectors currently trading above their 200 EMA
+    - sectors_below_200: All sectors currently trading below their 200 EMA
     """
-    sorted_all = sorted(sector_regimes.values(), key=lambda s: s.pct_from_50_dema, reverse=True)
+    # Filter for active sectoral & thematic indices
+    pure_sectors = [s for s in sector_regimes.values() if s.symbol not in ["^CNX100", "^CNX200", "^CRSLDX"]]
+    sorted_all = sorted(pure_sectors, key=lambda s: s.pct_from_50_dema, reverse=True)
     top_3 = sorted_all[:3]
     above_50 = [s for s in sorted_all if s.is_above_50_dema]
-    below_50 = [s for s in sorted_all if not s.is_above_50_dema]
-    return top_3, above_50, below_50
+    above_200 = [s for s in sorted_all if s.is_above_200_ema]
+    below_200 = [s for s in sorted_all if not s.is_above_200_ema]
+    return top_3, above_50, above_200, below_200
 
 
 def get_stock_sector_info(
@@ -172,7 +179,6 @@ def get_stock_sector_info(
 
     regime = sector_regimes.get(ticker)
     if not regime:
-        # Fallback search by clean symbol or name
         for t, r in sector_regimes.items():
             if ticker in t or r.index_name == sector_name:
                 regime = r
