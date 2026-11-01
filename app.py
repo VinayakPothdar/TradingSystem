@@ -23,6 +23,7 @@ from engine.backtester import run_full_backtest
 from engine.config import STRATEGIES, StrategyConfig
 from engine.data import load_all_candles
 from engine.gatekeeper import (
+    BROAD_MARKET_SYMBOLS,
     compute_gatekeeper_score,
     get_all_sector_regimes,
     get_sector_leaderboard,
@@ -30,7 +31,7 @@ from engine.gatekeeper import (
 from engine.scanner import export_scan_to_json, run_full_scan
 from engine.telegram import format_telegram_digest, send_telegram_message
 
-APP_VERSION = "4.0"
+APP_VERSION = "5.0"
 
 st.set_page_config(
     page_title="AVP Swing Intelligence",
@@ -39,10 +40,17 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Invalidate stale cache across versions
 if st.session_state.get("app_version") != APP_VERSION:
     st.session_state.clear()
     st.session_state["app_version"] = APP_VERSION
+
+with st.sidebar:
+    st.markdown(f"### ⚙️ Terminal Settings")
+    st.caption(f"System Version: **v{APP_VERSION}**")
+    if st.button("🔄 Clear Cache & Force Reload", use_container_width=True):
+        st.cache_data.clear()
+        st.session_state.clear()
+        st.rerun()
 
 # --- THEME CONTROLLER ---
 col_head_left, col_theme = st.columns([4, 1])
@@ -238,8 +246,8 @@ st.markdown(
 )
 
 
-@st.cache_data(ttl=3600)
-def get_cached_candles():
+@st.cache_data(ttl=1800)
+def get_cached_candles(version: str):
     return load_all_candles()
 
 
@@ -257,7 +265,7 @@ def get_market_data(df_all):
     return gk, sec_regimes, top_3, above_50, above_200, below_200
 
 
-df_all = get_cached_candles()
+df_all = get_cached_candles(APP_VERSION)
 gatekeeper, sector_regimes, top_3_sectors, sectors_above_50, sectors_above_200, sectors_below_200 = get_market_data(df_all)
 
 # --- MINIMALIST HEADER ---
@@ -367,6 +375,8 @@ with tab1:
         for r in results:
             grade_val = getattr(r, "grade", "A")
             badge_class = "grade-badge-aplus" if grade_val == "A+" else "grade-badge-a"
+            short_grade = "🟢 A+ Confirmed" if grade_val == "A+" else "🟡 Grade A"
+            respect_pct = getattr(r, "respect_score_pct", 50)
             strat_id = getattr(r, "strategy_id", "50_DEMA")
             strat_label = "50 DEMA (₹1k Risk)" if strat_id == "50_DEMA" else "200 EMA (₹2k Risk)"
             ind_name = getattr(r, "industry", "General")
@@ -387,18 +397,19 @@ with tab1:
             st.markdown(
                 f"""
                 <div class="trade-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                        <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;">
                             <span class="stock-ticker">{r.symbol}</span>
-                            <span class="industry-tag">● {ind_name} ({sec_name})</span>
+                            <span class="industry-tag">● {ind_name}</span>
                         </div>
-                        <div>
-                            <span class="{badge_class}">{grade_val} {getattr(r, 'setup_type', 'Base')}</span>
-                            <span class="respect-badge">EMA Respect: {getattr(r, 'respect_score_pct', 50)}%</span>
+                        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                            <span class="{badge_class}">{short_grade}</span>
+                            <span class="respect-badge">Respect: {respect_pct}%</span>
                         </div>
                     </div>
-                    <div style="font-size: 0.9em; color: {text_secondary}; margin-bottom: 8px;">
-                        Sector Health: <b style="color: {text_primary};">{sec_status}</b> • Strategy: <b style="color: {text_primary};">{strat_label}</b> • <i>{getattr(r, 'pattern_summary', '')}</i>
+                    <div style="font-size: 0.88em; color: {text_secondary}; margin-bottom: 8px; line-height: 1.4;">
+                        Sector: <b style="color: {text_primary};">{sec_name} ({sec_status})</b> • Strategy: <b style="color: {text_primary};">{strat_label}</b>
+                        <div style="color: {text_secondary}; font-style: italic; margin-top: 2px;">{getattr(r, 'pattern_summary', '')}</div>
                     </div>
                     <div class="metric-strip">
                         <div class="metric-cell">
@@ -496,15 +507,24 @@ with tab2:
 # TAB 3: ALL SECTOR INDICES DETAIL
 # ==========================================
 with tab3:
-    st.subheader(f"All {len(sector_regimes)} Sector & Broad Market Indices Detail")
+    pure_sectors_list = [
+        s for s in sector_regimes.values()
+        if s.symbol not in BROAD_MARKET_SYMBOLS and s.symbol.replace("^", "") not in BROAD_MARKET_SYMBOLS
+    ]
+    broad_market_list = [
+        s for s in sector_regimes.values()
+        if s.symbol in BROAD_MARKET_SYMBOLS or s.symbol.replace("^", "") in BROAD_MARKET_SYMBOLS
+    ]
+
+    st.subheader(f"📊 Sectoral & Thematic Indices ({len(pure_sectors_list)} Sectors)")
     st.caption("Ranked by momentum relative to 50 DEMA:")
 
-    for s in sorted(sector_regimes.values(), key=lambda x: x.pct_from_50_dema, reverse=True):
+    for s in sorted(pure_sectors_list, key=lambda x: x.pct_from_50_dema, reverse=True):
         st_color = accent_green if s.is_above_50_dema else (accent_amber if s.is_above_200_ema else accent_rose)
         st.markdown(
             f"""
             <div style="background-color: {bg_card}; border-left: 5px solid {st_color}; border: 1px solid {border_color}; border-left-width: 5px; padding: 12px 16px; margin-bottom: 8px; border-radius: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
                     <span style="font-weight: 800; font-size: 1.05em; color: {text_primary};">{s.index_name} <span style="font-weight: 500; color: {text_secondary}; font-size: 0.85em;">({s.symbol})</span></span>
                     <span style="font-weight: 800; color: {st_color};">{s.pct_from_50_dema:+.1f}% vs 50 DEMA</span>
                 </div>
@@ -515,3 +535,25 @@ with tab3:
             """,
             unsafe_allow_html=True,
         )
+
+    if broad_market_list:
+        st.markdown("<div style='margin-top: 24px;'></div>", unsafe_allow_html=True)
+        st.subheader(f"🏛️ Broad Market Benchmarks ({len(broad_market_list)} Indices)")
+        st.caption("Market-cap universe health (Large, Mid, Small):")
+
+        for s in sorted(broad_market_list, key=lambda x: x.pct_from_50_dema, reverse=True):
+            st_color = accent_green if s.is_above_50_dema else (accent_amber if s.is_above_200_ema else accent_rose)
+            st.markdown(
+                f"""
+                <div style="background-color: {bg_card}; border-left: 5px solid {st_color}; border: 1px solid {border_color}; border-left-width: 5px; padding: 12px 16px; margin-bottom: 8px; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-weight: 800; font-size: 1.05em; color: {text_primary};">{s.index_name} <span style="font-weight: 500; color: {text_secondary}; font-size: 0.85em;">({s.symbol})</span></span>
+                        <span style="font-weight: 800; color: {st_color};">{s.pct_from_50_dema:+.1f}% vs 50 DEMA</span>
+                    </div>
+                    <div style="font-size: 0.88em; color: {text_secondary}; margin-top: 4px;">
+                        Close: ₹{s.close:,.2f} • 50 DEMA: ₹{s.dema_50:,.2f} • 200 EMA: ₹{s.ema_200:,.2f} ({s.pct_from_200_ema:+.1f}%) • State: <b style="color: {st_color};">{s.trend_state}</b>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )

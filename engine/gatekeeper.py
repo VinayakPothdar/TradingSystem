@@ -147,18 +147,27 @@ def get_all_sector_regimes(df_all: pd.DataFrame) -> Dict[str, RegimeStatus]:
     return regimes
 
 
+BROAD_MARKET_SYMBOLS = {
+    "^NSEI", "^CNX100", "^CNX200", "^CRSLDX", "^NSEMDCP50", "NIFTYSMLCAP250",
+    "^NSMIDCP", "NSEI", "CNX100", "CNX200", "CRSLDX", "NSEMDCP50", "NSMIDCP", "NIFTYSMLCAP250",
+}
+
+
 def get_sector_leaderboard(
     sector_regimes: Dict[str, RegimeStatus]
 ) -> Tuple[List[RegimeStatus], List[RegimeStatus], List[RegimeStatus], List[RegimeStatus]]:
     """
     Returns:
-    - top_3_leaders: Top 3 performing sectors relative to 50 DEMA
-    - sectors_above_50: All sectors currently trading above their 50 DEMA
-    - sectors_above_200: All sectors currently trading above their 200 EMA
-    - sectors_below_200: All sectors currently trading below their 200 EMA
+    - top_3_leaders: Top 3 performing pure sectors relative to 50 DEMA
+    - sectors_above_50: All pure sectors currently trading above their 50 DEMA
+    - sectors_above_200: All pure sectors currently trading above their 200 EMA
+    - sectors_below_200: All pure sectors currently trading below their 200 EMA
     """
-    # Filter for active sectoral & thematic indices
-    pure_sectors = [s for s in sector_regimes.values() if s.symbol not in ["^CNX100", "^CNX200", "^CRSLDX"]]
+    # Filter for active sectoral & thematic indices only (exclude broad market benchmarks)
+    pure_sectors = [
+        s for s in sector_regimes.values()
+        if s.symbol not in BROAD_MARKET_SYMBOLS and s.symbol.replace("^", "") not in BROAD_MARKET_SYMBOLS
+    ]
     sorted_all = sorted(pure_sectors, key=lambda s: s.pct_from_50_dema, reverse=True)
     top_3 = sorted_all[:3]
     above_50 = [s for s in sorted_all if s.is_above_50_dema]
