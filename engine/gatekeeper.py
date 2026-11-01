@@ -1,13 +1,38 @@
 """
 Gatekeeper and Market Regime Module:
 Evaluates Nifty 50, Midcap, Bank Nifty, and Sector health relative to 50 DEMA and 200 EMA.
-Calculates Gatekeeper Score (0 - 10) and provides regime recommendation.
+Calculates Gatekeeper Score (0 - 10), tracks underlying sector EMA status for every stock,
+and provides regime recommendations.
 """
 
 from dataclasses import dataclass
-from typing import Dict, Optional
+from pathlib import Path
+from typing import Dict, Optional, Tuple
 import pandas as pd
 from engine.indicators import compute_dema, compute_ema
+
+INDUSTRY_TO_SECTOR = {
+    "Financial Services": ("Nifty Financial", "^CNXFIN"),
+    "Capital Goods": ("Nifty Infra / Capital Goods", "^CNXINFRA"),
+    "Healthcare": ("Nifty Pharma / Healthcare", "^CNXPHARMA"),
+    "Automobile and Auto Components": ("Nifty Auto", "^CNXAUTO"),
+    "Consumer Services": ("Nifty FMCG / Services", "^CNXFMCG"),
+    "Fast Moving Consumer Goods": ("Nifty FMCG", "^CNXFMCG"),
+    "Information Technology": ("Nifty IT", "^CNXIT"),
+    "Chemicals": ("Nifty Pharma / Chemicals", "^CNXPHARMA"),
+    "Metals & Mining": ("Nifty Metal", "^CNXMETAL"),
+    "Power": ("Nifty Energy / Power", "^CNXENERGY"),
+    "Oil Gas & Consumable Fuels": ("Nifty Energy / Oil & Gas", "^CNXENERGY"),
+    "Consumer Durables": ("Nifty Consumer Durables", "^CNXFMCG"),
+    "Services": ("Nifty Services", "^CNXSERVICE"),
+    "Construction": ("Nifty Infra / Construction", "^CNXINFRA"),
+    "Construction Materials": ("Nifty Infra / Materials", "^CNXINFRA"),
+    "Realty": ("Nifty Realty", "^CNXREALTY"),
+    "Telecommunication": ("Nifty Telecom", "^CNXINFRA"),
+    "Textiles": ("Nifty Textiles", "^CNXFMCG"),
+    "Media Entertainment & Publication": ("Nifty Media", "^CNXMEDIA"),
+    "Diversified": ("Nifty 50", "^NSEI"),
+}
 
 
 @dataclass
@@ -32,6 +57,20 @@ class GatekeeperReport:
     nifty50_status: Optional[RegimeStatus]
     midcap_status: Optional[RegimeStatus]
     regime_breakdown: Dict[str, RegimeStatus]
+
+
+def load_symbol_industry_map() -> Dict[str, str]:
+    """Loads Symbol -> Industry mapping from data/nifty500.csv."""
+    watchlist_path = Path(__file__).resolve().parents[1] / "data" / "nifty500.csv"
+    if not watchlist_path.exists():
+        return {}
+    try:
+        df = pd.read_csv(watchlist_path)
+        if "Symbol" in df.columns and "Industry" in df.columns:
+            return dict(zip(df["Symbol"].astype(str).str.strip().str.upper(), df["Industry"].astype(str).str.strip()))
+    except Exception:
+        pass
+    return {}
 
 
 def evaluate_index_regime(df: Optional[pd.DataFrame], name: str, symbol: str) -> Optional[RegimeStatus]:
@@ -73,6 +112,66 @@ def evaluate_index_regime(df: Optional[pd.DataFrame], name: str, symbol: str) ->
     )
 
 
+def get_all_sector_regimes(df_all: pd.DataFrame) -> Dict[str, RegimeStatus]:
+    """Evaluates 50 DEMA and 200 EMA positions for all major sectoral indices."""
+    sector_tickers = {
+        "^CNXAUTO": "Nifty Auto",
+        "^CNXENERGY": "Nifty Energy",
+        "^CNXFIN": "Nifty Financial Services",
+        "^CNXFMCG": "Nifty FMCG",
+        "^CNXINFRA": "Nifty Infrastructure",
+        "^CNXIT": "Nifty IT",
+        "^CNXMEDIA": "Nifty Media",
+        "^CNXMETAL": "Nifty Metal",
+        "^CNXPHARMA": "Nifty Pharma",
+        "^CNXREALTY": "Nifty Realty",
+        "^NSEBANK": "Nifty Bank",
+        "^NSEI": "Nifty 50",
+        "^NSMIDCP": "Nifty Midcap 150",
+    }
+    regimes: Dict[str, RegimeStatus] = {}
+    for ticker, name in sector_tickers.items():
+        clean_sym = ticker.replace("^", "")
+        sub = df_all[df_all["Symbol"] == clean_sym]
+        if sub.empty:
+            sub = df_all[df_all["Symbol"] == ticker]
+        if not sub.empty:
+            status = evaluate_index_regime(sub, name, ticker)
+            if status:
+                regimes[ticker] = status
+    return regimes
+
+
+def get_stock_sector_info(
+    symbol: str,
+    industry_map: Dict[str, str],
+    sector_regimes: Dict[str, RegimeStatus],
+) -> Tuple[str, str, str, bool]:
+    """
+    Returns (industry_name, sector_index_name, sector_status_label, is_sector_bullish).
+    """
+    sym = symbol.replace(".NS", "").upper()
+    industry = industry_map.get(sym, "Diversified")
+    sector_name, ticker = INDUSTRY_TO_SECTOR.get(industry, ("Nifty 50", "^NSEI"))
+
+    regime = sector_regimes.get(ticker)
+    if regime:
+        if regime.is_above_50_dema:
+            label = f"🟢 Above 50 DEMA ({regime.pct_from_50_dema:+.1f}%)"
+            is_bullish = True
+        elif regime.is_above_200_ema:
+            label = f"🟡 Below 50 DEMA, Above 200 EMA ({regime.pct_from_200_ema:+.1f}%)"
+            is_bullish = False
+        else:
+            label = f"🔴 Below 200 EMA ({regime.pct_from_200_ema:+.1f}%)"
+            is_bullish = False
+    else:
+        label = "⚪ Sector Regime N/A"
+        is_bullish = True
+
+    return industry, sector_name, label, is_bullish
+
+
 def compute_gatekeeper_score(indices_data: Dict[str, pd.DataFrame]) -> GatekeeperReport:
     """
     Computes unified Gatekeeper score (0 - 10) based on market indices.
@@ -104,22 +203,19 @@ def compute_gatekeeper_score(indices_data: Dict[str, pd.DataFrame]) -> Gatekeepe
     if bank_status:
         breakdown["Nifty Bank"] = bank_status
 
-    score = 7.0  # Default neutral
+    score = 7.0
     if nifty_status and midcap_status:
         pts = 0.0
-        # Nifty 50 (max 4 pts)
         if nifty_status.is_above_50_dema:
             pts += 4.0
         elif nifty_status.is_above_200_ema:
             pts += 2.0
 
-        # Midcap (max 4 pts)
         if midcap_status.is_above_50_dema:
             pts += 4.0
         elif midcap_status.is_above_200_ema:
             pts += 2.0
 
-        # Bank Nifty (max 2 pts)
         if bank_status:
             if bank_status.is_above_50_dema:
                 pts += 2.0

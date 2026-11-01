@@ -1,7 +1,8 @@
 """
 Telegram Bot Notification Module:
 Formats and sends the Unified Daily 6:00 PM Digest to the user's phone.
-Supports rich Markdown/HTML styling for 50 DEMA (@ ₹1k) and 200 EMA (@ ₹2k).
+Supports rich Markdown/HTML styling for 50 DEMA (@ ₹1k) and 200 EMA (@ ₹2k),
+including underlying Sector Name and Sector EMA Status.
 """
 
 import os
@@ -20,7 +21,6 @@ def format_telegram_digest(
     """Formats scan results into a clean, professional Telegram message."""
     date_str = results[0].last_candle_date if results else "Today"
 
-    # Header & Market Regime
     lines = [
         f"🚀 *SWING SCANNER DIGEST — {date_str}*",
     ]
@@ -35,10 +35,11 @@ def format_telegram_digest(
     # 1. 50 DEMA Section
     lines.append("🔥 *50 DEMA HIGH-MOMENTUM SWINGS* (1R = ₹1,000)")
     if dema50_setups:
-        for r in dema50_setups[:5]:  # Top 5
+        for r in dema50_setups[:5]:
             grade_badge = "🟢 *Grade A+ (Confirmed HL)*" if r.grade == "A+" else "🟡 *Grade A (First-Touch)*"
             lines.append(
-                f"\n📌 *{r.symbol}* — {grade_badge}\n"
+                f"\n📌 *{r.symbol}* • _{r.industry}_ — {grade_badge}\n"
+                f"• *Sector*: {r.sector_name} ({r.sector_status_label})\n"
                 f"• *Pattern*: {r.pattern_summary}\n"
                 f"• *50 DEMA Respect*: {r.respect_score_pct}% ({r.respect_grade})\n"
                 f"• *Buy Above*: ₹{r.entry_price:,.2f} (Stop-Limit)\n"
@@ -54,10 +55,11 @@ def format_telegram_digest(
     # 2. 200 EMA Section
     lines.append("🛡️ *200 EMA DEEP VALUE SWINGS* (1R = ₹2,000)")
     if ema200_setups:
-        for r in ema200_setups[:5]:  # Top 5
+        for r in ema200_setups[:5]:
             grade_badge = "🟢 *Grade A+ (Confirmed HL)*" if r.grade == "A+" else "🟡 *Grade A (First-Touch)*"
             lines.append(
-                f"\n📌 *{r.symbol}* — {grade_badge}\n"
+                f"\n📌 *{r.symbol}* • _{r.industry}_ — {grade_badge}\n"
+                f"• *Sector*: {r.sector_name} ({r.sector_status_label})\n"
                 f"• *Pattern*: {r.pattern_summary}\n"
                 f"• *200 EMA Respect*: {r.respect_score_pct}% ({r.respect_grade})\n"
                 f"• *Buy Above*: ₹{r.entry_price:,.2f} (Stop-Limit)\n"
@@ -79,10 +81,7 @@ def send_telegram_message(
     bot_token: Optional[str] = None,
     chat_id: Optional[str] = None,
 ) -> bool:
-    """
-    Sends message to Telegram via Bot API.
-    Reads token & chat_id from environment variables if not provided.
-    """
+    """Sends message to Telegram via Bot API."""
     token = bot_token or os.environ.get("TELEGRAM_BOT_TOKEN")
     chat = chat_id or os.environ.get("TELEGRAM_CHAT_ID")
 

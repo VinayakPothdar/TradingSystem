@@ -3,8 +3,9 @@ Swing Intelligence Mobile Web App:
 - Live Scanner: 50 DEMA (₹1k risk) and 200 EMA (₹2k risk)
 - Grade A+ (Confirmed Higher-Low) vs Grade A (First-Touch Base)
 - EMA Respect Score & GTT Copy Cards
+- Underlying Sector Name & Sector EMA Position
 - Backtesting Hub: 8.5-year simulation, equity curves, trade logs
-- Gatekeeper: Macro market regime scoring
+- Gatekeeper: Macro market & Sectoral regime scoring
 """
 
 import json
@@ -17,7 +18,7 @@ import streamlit as st
 from engine.backtester import run_full_backtest
 from engine.config import STRATEGIES, StrategyConfig
 from engine.data import load_all_candles
-from engine.gatekeeper import compute_gatekeeper_score
+from engine.gatekeeper import compute_gatekeeper_score, get_all_sector_regimes
 from engine.scanner import export_scan_to_json, run_full_scan
 from engine.telegram import format_telegram_digest, send_telegram_message
 
@@ -65,6 +66,14 @@ st.markdown(
         border-radius: 12px;
         font-size: 0.8em;
     }
+    .badge-sector {
+        background-color: #21262d;
+        color: #e6edf3;
+        border: 1px solid #30363d;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.8em;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -91,6 +100,7 @@ def get_market_regime(df_all):
 # --- MAIN APP HEADER ---
 df_all = get_cached_candles()
 gatekeeper = get_market_regime(df_all)
+sector_regimes = get_all_sector_regimes(df_all)
 
 st.title("📈 Swing Intelligence")
 st.caption(f"Institutional ATH & DEMA Swing System • {gatekeeper.headline}")
@@ -137,7 +147,7 @@ with tab1:
 
     # State management for scan results
     if "scan_results" not in st.session_state or run_scan_btn:
-        with st.spinner("Scanning Nifty 500 stocks across True ATH & DEMA pullbacks..."):
+        with st.spinner("Scanning Nifty 500 stocks across True ATH, DEMA pullbacks & Sectors..."):
             strat_arg = None if selected_strategy == "COMBINED" else selected_strategy
             raw_results = run_full_scan(df_all, strategy_id=strat_arg)
             st.session_state["scan_results"] = raw_results
@@ -165,6 +175,7 @@ with tab1:
             gtt_text = (
                 f"DHAN GTT ORDER:\n"
                 f"Symbol: {r.symbol}\n"
+                f"Sector: {r.industry} ({r.sector_name})\n"
                 f"Trigger Price: ₹{r.entry_price}\n"
                 f"Limit Price: ₹{round(r.entry_price * 1.003, 2)}\n"
                 f"Stop-Loss: ₹{r.stop_loss_price}\n"
@@ -175,15 +186,18 @@ with tab1:
             st.markdown(
                 f"""
                 <div class="setup-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 1.25em; font-weight: bold; color: #58a6ff;">{r.symbol}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                        <div>
+                            <span style="font-size: 1.3em; font-weight: bold; color: #58a6ff;">{r.symbol}</span>
+                            <span style="color: #8b949e; font-size: 0.9em; margin-left: 6px;">• <b>{r.industry}</b> ({r.sector_name})</span>
+                        </div>
                         <div>
                             <span class="{badge_class}">{r.grade} {r.setup_type}</span>
                             <span class="badge-respect">EMA Respect: {r.respect_score_pct}%</span>
                         </div>
                     </div>
-                    <div style="font-size: 0.9em; color: #8b949e; margin-bottom: 10px;">
-                        Strategy: <b>{strat_label}</b> • Pattern: <i>{r.pattern_summary}</i>
+                    <div style="font-size: 0.88em; color: #8b949e; margin-bottom: 10px;">
+                        Sector EMA: <b>{r.sector_status_label}</b> • Strategy: <b>{strat_label}</b> • Pattern: <i>{r.pattern_summary}</i>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 12px;">
                         <div><b>Buy (Stop-Limit):</b> ₹{r.entry_price:,.2f}</div>
@@ -219,11 +233,6 @@ with tab2:
             summary, trades_df = run_full_backtest(df_all, strategy_id=bt_strat)
             st.session_state["bt_summary"] = summary
             st.session_state["bt_trades"] = trades_df
-
-    # Load from session or run initial
-    if "bt_summary" not in st.session_state:
-        # Pre-computed verified baseline for instant display
-        st.session_state["bt_summary"] = None
 
     if st.session_state.get("bt_summary"):
         s = st.session_state["bt_summary"]
@@ -273,6 +282,7 @@ with tab3:
     st.markdown(f"### Overall Recommendation: **{gatekeeper.status}**")
     st.write(gatekeeper.headline)
 
+    st.markdown("#### Broad Market Indices")
     for name, stat in gatekeeper.regime_breakdown.items():
         state_color = "🟢" if stat.trend_state == "BULLISH" else ("🟡" if stat.trend_state == "CAUTION" else "🔴")
         st.markdown(
@@ -281,6 +291,18 @@ with tab3:
                 <b>{state_color} {name}</b> ({stat.symbol})<br>
                 Close: ₹{stat.close:,.2f} • 50 DEMA: ₹{stat.dema_50:,.2f} ({stat.pct_from_50_dema:+.1f}%) • 200 EMA: ₹{stat.ema_200:,.2f} ({stat.pct_from_200_ema:+.1f}%)<br>
                 State: <b>{stat.trend_state}</b>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("#### All Sectoral Indices (50 DEMA Health)")
+    for ticker, stat in sector_regimes.items():
+        state_color = "🟢" if stat.is_above_50_dema else ("🟡" if stat.is_above_200_ema else "🔴")
+        st.markdown(
+            f"""
+            <div style="background-color: #161b22; border-left: 4px solid {'#238636' if stat.is_above_50_dema else '#da3633'}; padding: 8px 12px; margin-bottom: 6px; border-radius: 4px;">
+                <b>{state_color} {stat.index_name}</b> ({ticker}): {stat.pct_from_50_dema:+.1f}% vs 50 DEMA • {stat.pct_from_200_ema:+.1f}% vs 200 EMA
             </div>
             """,
             unsafe_allow_html=True,

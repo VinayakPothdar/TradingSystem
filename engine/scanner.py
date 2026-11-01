@@ -11,6 +11,7 @@ Strict Institutional Filters:
 - Base Contraction (4-8 bars, 1.5% <= risk_pct <= 7.5%)
 - Grade A+ (Confirmed Higher-Low) vs Grade A (First-Touch Base)
 - Moving Average Respect Score (EMA Affinity)
+- Underlying Sector EMA Position & Industry Tracking
 """
 
 from dataclasses import asdict, dataclass
@@ -21,6 +22,12 @@ import numpy as np
 import pandas as pd
 
 from engine.config import STRATEGIES, StrategyConfig
+from engine.gatekeeper import (
+    get_all_sector_regimes,
+    get_stock_sector_info,
+    load_symbol_industry_map,
+    RegimeStatus,
+)
 from engine.indicators import (
     compute_ma_respect_score,
     detect_higher_low_pattern,
@@ -34,6 +41,10 @@ class ScanResult:
     symbol: str
     strategy_id: str
     strategy_name: str
+    industry: str                # e.g. "Metals & Mining"
+    sector_name: str             # e.g. "Nifty Metal"
+    sector_status_label: str     # e.g. "🟢 Above 50 DEMA (+3.8%)"
+    is_sector_bullish: bool
     grade: str                   # 'A+' (Confirmed Higher-Low) or 'A' (First-Touch Base)
     setup_type: str              # 'Confirmed Higher-Low Pivot' or 'First-Touch Base'
     current_price: float
@@ -59,7 +70,13 @@ class ScanResult:
     corr_from_ath_pct: float
 
 
-def scan_single_stock(df: pd.DataFrame, symbol: str, strategy: StrategyConfig) -> Optional[ScanResult]:
+def scan_single_stock(
+    df: pd.DataFrame,
+    symbol: str,
+    strategy: StrategyConfig,
+    industry_map: Dict[str, str],
+    sector_regimes: Dict[str, RegimeStatus],
+) -> Optional[ScanResult]:
     """Evaluates a single stock DataFrame against a strategy configuration."""
     if df is None or len(df) < 220:
         return None
@@ -158,6 +175,11 @@ def scan_single_stock(df: pd.DataFrame, symbol: str, strategy: StrategyConfig) -
     # Moving Average Respect Score
     respect = compute_ma_respect_score(enriched, ma_col=ma_col, lookback_bars=250)
 
+    # Sector & Industry Info
+    industry, sector_name, sector_status, is_sector_bullish = get_stock_sector_info(
+        symbol, industry_map, sector_regimes
+    )
+
     candle_date = str(latest["Date"])[:10] if "Date" in latest else ""
     corr_pct = round(((curr_close - ath_price) / ath_price) * 100.0, 1)
 
@@ -165,6 +187,10 @@ def scan_single_stock(df: pd.DataFrame, symbol: str, strategy: StrategyConfig) -
         symbol=symbol,
         strategy_id=strategy.id,
         strategy_name=strategy.name,
+        industry=industry,
+        sector_name=sector_name,
+        sector_status_label=sector_status,
+        is_sector_bullish=is_sector_bullish,
         grade=grade,
         setup_type=setup_type,
         current_price=round(curr_close, 2),
@@ -200,6 +226,9 @@ def run_full_scan(df_all: pd.DataFrame, strategy_id: Optional[str] = None) -> Li
         [STRATEGIES[strategy_id]] if strategy_id and strategy_id in STRATEGIES else list(STRATEGIES.values())
     )
 
+    industry_map = load_symbol_industry_map()
+    sector_regimes = get_all_sector_regimes(df_all)
+
     symbols = df_all["Symbol"].unique()
     results: List[ScanResult] = []
 
@@ -208,7 +237,7 @@ def run_full_scan(df_all: pd.DataFrame, strategy_id: Optional[str] = None) -> Li
             if str(sym).startswith("^"):
                 continue
             stock_df = df_all[df_all["Symbol"] == sym].sort_values("Date").reset_index(drop=True)
-            res = scan_single_stock(stock_df, str(sym), strat)
+            res = scan_single_stock(stock_df, str(sym), strat, industry_map, sector_regimes)
             if res:
                 results.append(res)
 
