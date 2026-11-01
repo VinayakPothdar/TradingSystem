@@ -83,6 +83,14 @@ if __name__ == '__main__':
     df_results = engine.run_full_backtest()
     
     # Output reports
+    market_caps_csv = os.path.join(backtest_dir, '..', 'TradingJournalAutomation', 'DhanTradingJournal', 'Data', 'Watchlists', 'nifty500_market_caps.csv')
+    if os.path.exists(market_caps_csv):
+        mc_df = pd.read_csv(market_caps_csv)
+        sym_to_cap = dict(zip(mc_df['Symbol'], mc_df['MarketCapTier']))
+        df_results['MarketCap'] = df_results['Symbol'].map(sym_to_cap).fillna('Mid Cap')
+    else:
+        df_results['MarketCap'] = 'Mid Cap'
+        
     out_csv = os.path.join(backtest_dir, 'backtest_trades_log.csv')
     df_results.to_csv(out_csv, index=False)
     print(f"Saved full trade log to: {out_csv}")

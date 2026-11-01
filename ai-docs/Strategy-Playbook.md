@@ -68,21 +68,41 @@ flowchart LR
 
 ## 3. Strategy Matrix: Swing vs. Positional
 
-| Parameter | Swing Strategy | Positional Strategy |
+| Parameter | Swing Strategy | Positional Strategy (200 WEMA System) |
 | :--- | :--- | :--- |
-| **Timeframe** | Daily chart | Weekly chart |
-| **Prior Trend / ATH** | Fresh All-Time High within **$\le$ 180 trading days** | ATH within the past ~1 year |
-| **Pullback Zone** | Daily 200 EMA (or 50 / 100 EMA) approached from **above** | Weekly 200 WEMA / Major base support |
-| **Bounce Count Limit** | **1st test = Prime (A+)**; 2nd = Acceptable; **3rd+ = Disqualified** | 1st or 2nd base on primary multi-year trend |
-| **Structural Level** | Resistance-turned-Support (R $\rightarrow$ S) required | Resistance-turned-Support (R $\rightarrow$ S) required |
-| **Sector Filter** | Sector must be **above its own 200 EMA** & showing RS | Sector strength is a supporting nuance |
-| **Market Regime** | Broader market (Nifty) in **pullback / sell-off digestion** | Secular uptrend / market recovery |
-| **Base Pattern** | W-base or shallow base (4–12 daily candles) | Base / consolidation on Weekly |
-| **Stop-Loss (SL)** | **4% – 6%** (tight, under base higher low) | **8% – 10%** (room for weekly fluctuations) |
-| **Breakeven Rule** | **Mandatory Move to BE at $+1.5\text{R}$** | Trail after initial multi-week base breakout |
-| **Profit Taking** | **Book 50% at $+2\text{R}$**; trail remainder | Book 50% at $+3\text{R}$ to $+4\text{R}$; trail remainder |
-| **Holding Period** | **2 weeks to 1–2 months** | **6 months to 12 months** |
-| **Pyramiding / Adds** | **Strictly NO adds or averaging down** | **Yes** (add 50% of remaining qty on next base) |
+| **Timeframe** | Daily chart (`1D`) | Weekly chart (`1W` / Friday Close) |
+| **Prior Trend / ATH** | Fresh All-Time High within **$\le$ 180 trading days** | 52-Week High within past **$\le$ 52 weeks** (min 6 weeks age) |
+| **Pullback Zone** | Daily 200 EMA (or 50 / 100 EMA) approached from **above** | **Weekly 200 WEMA** ($+3\%$ touch zone, $\le -5\%$ wick buffer) |
+| **Bounce Count Limit** | **1st test = Prime (A+)**; 2nd = Acceptable; **3rd+ = Disqualified** | 1st or 2nd structural test on primary secular trend |
+| **Structural Level** | Resistance-turned-Support (R $\rightarrow$ S) required | Multi-year secular accumulation bedrock |
+| **Sector Filter** | Sector must be **above its own 200 EMA** & showing RS | Sector in Stage 2 or consolidating above key weekly EMAs |
+| **Market Regime** | Broader market (Nifty) in **pullback / sell-off digestion** | **MANDATORY**: Nifty 50 must be **above its 50-Week EMA** |
+| **Base Pattern** | W-base or shallow base (4–12 daily candles) | Weekly base consolidation (**3 to 10 weekly candles**) |
+| **Confirmation Pivot** | Higher Low / W-bottom before entry | W-bottom inside weekly base (second half low $\ge 98.5\%$ first half) |
+| **Entry Trigger** | Daily breakout above W-base high | Daily candle crossing above the **highest high of the weekly base** |
+| **Stop-Loss (SL)** | **4% – 6%** (tight, under base higher low) | **8% – 12%** (weekly base low minus $0.3 \times \text{Weekly ATR}$) |
+| **Breakeven Rule** | **Mandatory Move to BE at $+1.5\text{R}$** | **Mandatory Move to BE at $+1.5\text{R}$** (Prevents *Voltas* round trips) |
+| **Profit Taking** | **Book 50% at $+2\text{R}$**; trail remainder | **Book 50% at $+2.5\text{R}$ to $+3.0\text{R}$**; trail remainder |
+| **Trailing Method** | Base low minus $0.5 \times \text{ATR}$ | Trail below low of subsequent higher weekly consolidation bases |
+| **Holding Period** | **2 weeks to 1–2 months** | **3 months to 9 months** (Average winner: ~166 days) |
+| **Risk Modeling** | Fixed **₹1,000 per trade (1R = ₹1k)** | Fixed **₹1,000 per trade (1R = ₹1k)** |
+
+---
+
+### The Positional 200 WEMA System: Quantitative Validation (2018–2026)
+
+Across the **Nifty 500 universe** over an 8.5-year dataset (~2,160 daily bars / ~450 weekly bars):
+* **With Market Regime Filter (Nifty above 50 WEMA)**:
+  * **Profit Factor**: **2.44**
+  * **Total Realized Payoff**: **$+23.35\text{R}$** ($+₹23,382.70$)
+  * **Average Winner**: **$+3.30\text{R}$** (Hold time: $166.8$ days)
+  * **Average Loser**: **$-1.02\text{R}$** (Hold time: $63.2$ days)
+  * **Round-Trip Failures**: **0** (eliminated completely by $+1.5\text{R}$ Breakeven rule)
+* **The 2026 Market Regime Finding**:
+  * Between March 2026 and September 2026, Nifty dropped below its 50-week EMA ($24,900 \rightarrow 23,100$).
+  * The systematic engine refused to take any trades in 2026, preserving $100\%$ of capital.
+  * When tested *without* the market filter, 2026 trades suffered a **$100\%$ failure rate** (e.g. *UTI AMC*, *Asian Paints*, *Reliance*).
+  * **Core Law**: *Positional trading demands a secular market tailwind (Nifty above 50 WEMA). While swing trades can exploit 5–15 day counter-trend slingshots, positional trades will always get dragged down by prolonged macro distribution.*
 
 ---
 

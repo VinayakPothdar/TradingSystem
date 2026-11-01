@@ -87,8 +87,8 @@ class SwingBacktestEngine:
         tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
         df['ATR'] = tr.rolling(window=14, min_periods=5).mean()
         
-        # Rolling 250-day High (ATH proxy)
-        df['ATH'] = df['High'].rolling(window=250, min_periods=60).max()
+        # True Lifetime All-Time High
+        df['ATH'] = df['High'].cummax()
         
         # Days since last ATH
         is_ath = (df['High'] >= df['ATH'] * 0.998)

@@ -26,7 +26,9 @@ Console.WriteLine("  7 - Sync All Market Indices (31 NSE Broad & Sectoral Indice
 Console.WriteLine("  8 - Sync Custom Stocks (Enter comma-separated tickers)");
 Console.WriteLine("  9 - Sync All Stocks (Nifty 500 Universe)");
 Console.WriteLine("  10 - Sync Both Indices + Traded Stocks");
-Console.Write("\nEnter choice (1-10): ");
+Console.WriteLine("  11 - Sync Positional Universe (8-Year History 2018-Present for 200 WEMA)");
+Console.WriteLine("  12 - Review & Autopsy Positional Trades (Generate 'TradeReview - Positional' sheet)");
+Console.Write("\nEnter choice (1-12): ");
 
 var choice = args.Length > 0 ? args[0].Trim() : (Console.ReadLine()?.Trim() ?? "4");
 Console.WriteLine();
@@ -105,6 +107,19 @@ try
     if (choice == "10")
     {
         candleSyncService.RunSync("both");
+    }
+
+    if (choice == "11")
+    {
+        candleSyncService.RunSync("positional");
+    }
+
+    if (choice == "12")
+    {
+        Console.WriteLine("\nRunning Positional Autopsy & Diagnostics...");
+        excelExportService.BackfillRMultipleFormulas();
+        var (results, summary) = tradeReviewService.RunReview("Positional");
+        excelExportService.ExportTradeReview(results, summary, "TradeReview - Positional", "Positional Trading");
     }
 }
 catch (Exception ex)

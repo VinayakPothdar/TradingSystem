@@ -20,7 +20,7 @@ public class HistoricalDataSyncService
 
     /// <summary>
     /// Runs historical candle sync.
-    /// Modes: "matched" (trades only), "indices" (all indices), "custom" (comma-separated), "all" (Nifty 500), "both" (indices + trades).
+    /// Modes: "matched" (trades only), "indices" (all indices), "custom" (comma-separated), "all" (Nifty 500), "both" (indices + trades), "positional" (8-year 2018-present for 200 WEMA).
     /// </summary>
     public bool RunSync(string mode, string? customSymbols = null)
     {

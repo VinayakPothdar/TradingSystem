@@ -227,18 +227,23 @@ def download_symbol(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Download fresh candles for traded stocks, all indices, or custom symbols.")
-    parser.add_argument("--mode", choices=["both", "matched", "indices", "custom", "all"], default="both",
-                        help="Sync mode: 'matched' (trades only), 'indices' (indices only), 'custom' (comma-separated symbols), 'all' (Nifty 500 universe), or 'both' (default).")
+    parser.add_argument("--mode", choices=["both", "matched", "indices", "custom", "all", "positional"], default="both",
+                        help="Sync mode: 'matched' (trades only), 'indices' (indices only), 'custom' (comma-separated symbols), 'all' (Nifty 500), 'positional' (2018-present 8-yr history for Nifty 500 + indices), or 'both' (default).")
     parser.add_argument("--symbols", default="", help="Comma-separated stock symbols for 'custom' mode (e.g. 'BEL, TVSMOTOR, RELIANCE').")
     parser.add_argument("--journal", default=r"D:\TradingJournal\MasterJournal.xlsx")
     parser.add_argument("--indices", default="Data/Watchlists/indices.csv")
     parser.add_argument("--aliases", default="Data/Watchlists/symbol_aliases.csv")
     parser.add_argument("--watchlist", default="Data/Watchlists/nifty500.csv")
     parser.add_argument("--output", default="Data/Historical/Yahoo")
-    parser.add_argument("--start", default="2024-01-01")
+    parser.add_argument("--start", default=None, help="Start date YYYY-MM-DD. Defaults to 2018-01-01 for positional, 2024-01-01 for others.")
     parser.add_argument("--end", default=None)
     parser.add_argument("--delay", type=float, default=0.1)
+    parser.add_argument("--workers", type=int, default=8, help="Number of concurrent download threads.")
     args = parser.parse_args()
+
+    # Determine start date: 2018-01-01 for positional (8-year 200 WEMA history), 2024-01-01 for standard
+    if args.start is None:
+        args.start = "2018-01-01" if args.mode == "positional" else "2024-01-01"
 
     project_dir = Path(__file__).resolve().parents[1]
     output_dir = project_dir / args.output
@@ -357,6 +362,85 @@ def main() -> int:
                 fail_count += 1
             time.sleep(args.delay)
         print(f"  Universe stocks updated: {success_count} / {len(universe)} (failed: {fail_count})\n")
+
+    # 5. POSITIONAL SYNC (2018 to Present, Nifty 500 + Indices, Multi-threaded)
+    if args.mode == "positional":
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        print(f"--- [POSITIONAL MODE] Downloading 8-Year Historical Data ({args.start} to Present) ---")
+        print(f"--- Fast Multi-threaded Ingestion ({args.workers} workers) ---")
+        
+        # Collect all indices + Nifty 500 universe
+        market_indices = load_indices(indices_path)
+        all_targets = list(market_indices.values())
+        
+        with watchlist_path.open("r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                sym = (row.get("Symbol") or "").strip().upper()
+                if sym:
+                    all_targets.append(f"{sym}.NS")
+                    
+        # Deduplicate
+        all_targets = list(dict.fromkeys(all_targets))
+        total_targets = len(all_targets)
+        print(f"  Target Universe: {total_targets} instruments (Indices + Nifty 500 stocks).\n")
+        
+        batch_size = 25
+        success_count = 0
+        fail_count = 0
+        total_batches = (total_targets + batch_size - 1) // batch_size
+        
+        import pandas as pd
+        for b_start in range(0, total_targets, batch_size):
+            chunk = all_targets[b_start : b_start + batch_size]
+            b_num = (b_start // batch_size) + 1
+            print(f"  [Batch {b_num:2d}/{total_batches:2d}] Downloading {len(chunk)} instruments...", flush=True)
+            
+            try:
+                data = yf.download(
+                    chunk,
+                    start=args.start,
+                    end=args.end,
+                    interval="1d",
+                    group_by="ticker",
+                    progress=False,
+                    threads=True
+                )
+                
+                for sym in chunk:
+                    out_file = output_dir / f"{sym}.csv"
+                    sec_file = bin_output_dir / f"{sym}.csv" if bin_output_dir.parent.exists() else None
+                    
+                    try:
+                        if hasattr(data.columns, 'levels') and sym in data.columns.levels[0]:
+                            sub_df = data[sym].dropna(subset=['Close'])
+                        elif len(chunk) == 1 and not data.empty and 'Close' in data.columns:
+                            sub_df = data.dropna(subset=['Close'])
+                        else:
+                            sub_df = None
+                            
+                        if sub_df is not None and not sub_df.empty:
+                            sub_df = sub_df.reset_index()
+                            sub_df['Date'] = pd.to_datetime(sub_df['Date']).dt.strftime('%Y-%m-%d')
+                            cols = [c for c in ["Date", "Open", "High", "Low", "Close", "Volume"] if c in sub_df.columns]
+                            sub_df = sub_df[cols]
+                            out_file.parent.mkdir(parents=True, exist_ok=True)
+                            sub_df.to_csv(out_file, index=False)
+                            if sec_file:
+                                sec_file.parent.mkdir(parents=True, exist_ok=True)
+                                sub_df.to_csv(sec_file, index=False)
+                            success_count += 1
+                        else:
+                            fail_count += 1
+                    except Exception:
+                        fail_count += 1
+            except Exception as ex:
+                print(f"    Batch {b_num} error: {ex}")
+                fail_count += len(chunk)
+                
+            time.sleep(0.3)
+                
+        print(f"\n  Positional sync complete: {success_count} / {total_targets} downloaded successfully (failed: {fail_count})\n")
 
     print("==================================================")
     print("SYNC COMPLETE!")

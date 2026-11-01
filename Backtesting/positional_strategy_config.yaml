@@ -1,0 +1,101 @@
+# ==============================================================================
+# POSITIONAL 200 WEMA PULLBACK STRATEGY CONFIGURATION (DECOMMISSIONED)
+# Weekly Base Consolidation System across Nifty 500 Universe
+# Status: FORMALLY DECOMMISSIONED / ARCHIVED POST-AUTOPSY
+# Reason: 200 WEMA is multi-year Stage 4 bottom-fishing with 100% loss rate in 2026.
+# Note: 50 WEMA on Weekly is mathematically identical to 200 DEMA on Daily.
+# ==============================================================================
+
+# Strategy Metadata
+strategy_name: "Positional_200WEMA_System_Decommissioned"
+description: "Pullback to 200 WEMA with weekly base consolidation (Archived Post-Mortem)"
+timeframe: "weekly"
+
+# ------------------------------------------------------------------------------
+# 1. MOVING AVERAGE SUPPORT CONFIGURATION (WEEKLY)
+# ------------------------------------------------------------------------------
+# Support moving average on the weekly timeframe:
+# 200 = 200 WEMA (Multi-year bedrock demand zone)
+# 50 = 50 WEMA (1-year institutional trend line)
+# 30 = 30 WEMA (Stan Weinstein Stage 2 line)
+support_ema: 200
+
+# Touch tolerance zone around 200 WEMA:
+# zone_tolerance_upper: touches within +3% count as entering the support zone
+# zone_tolerance_lower: allowable wick penetration up to -5% below 200 WEMA
+zone_tolerance_upper: 0.03
+zone_tolerance_lower: -0.05
+
+# Approach direction:
+# true = price must approach 200 WEMA from ABOVE (pullback from secular bull trend)
+require_approach_from_above: true
+
+# ------------------------------------------------------------------------------
+# 2. ALL-TIME HIGH / MULTI-YEAR POSTURE FILTER
+# ------------------------------------------------------------------------------
+# Lookback in weekly bars for a 52-week High (52 weeks = 1 year):
+ath_lookback_weeks: 52
+
+# Minimum weeks elapsed since 52W High (allows stock time to correct cleanly into 200 WEMA):
+ath_min_age_weeks: 6
+
+# ------------------------------------------------------------------------------
+# 3. WEEKLY BASE CONSOLIDATION & ENTRY TRIGGER
+# ------------------------------------------------------------------------------
+# Base length in weekly candles at or near the 200 WEMA:
+# 3 to 10 weeks of tight consolidation
+base_min_candles: 3
+base_max_candles: 10
+
+# Require higher-low / W-pattern pivot inside the base:
+require_higher_low: true
+
+# Entry trigger method:
+# "breakout_base_high": Buy on daily breakout crossing above the highest high of the weekly base
+entry_trigger_method: "breakout_base_high"
+
+# ------------------------------------------------------------------------------
+# 4. BROADER MARKET (NIFTY 500 / NIFTY 50) REGIME FILTER
+# ------------------------------------------------------------------------------
+# Test user hypothesis: did trades fail post-August due to market regime?
+enable_nifty_filter: true
+
+# Market condition options:
+# "above_50_wema": Nifty 50 is trading above its rising 50-week EMA
+# "above_20_wema": Nifty 50 is trading above its 20-week EMA
+# "all": No market filter (takes trades in all market regimes)
+nifty_condition: "above_50_wema"
+
+# ------------------------------------------------------------------------------
+# 5. RISK & POSITION SIZING (1R = ₹1,000)
+# ------------------------------------------------------------------------------
+# Risk capital in INR per trade (1R):
+risk_per_trade_inr: 1000
+
+# Buffer below weekly base low (fraction of Weekly ATR):
+sl_atr_buffer: 0.3
+
+# Maximum allowable initial stop-loss percentage (e.g. 0.12 = 12% max positional risk):
+max_initial_sl_pct: 0.12
+
+# ------------------------------------------------------------------------------
+# 6. TRADE MANAGEMENT & PROFIT TARGETS
+# ------------------------------------------------------------------------------
+# Mandatory Breakeven Trigger:
+# Move SL to Breakeven when trade reaches this R-multiple (1.5R eliminates Voltas round trips):
+breakeven_trigger_r: 1.5
+
+# Target 1 (T1) Partial Booking:
+# R-multiple to take partial profit (2.5R = ₹2,500 profit per 1R risk):
+target_1_r: 2.5
+
+# Portion of position to close at Target 1 (0.50 = 50%):
+target_1_size_pct: 0.50
+
+# Trailing strategy for remaining 50% runner:
+# "weekly_base_low": Trail stop below the low of each newly formed weekly consolidation base
+# "ema_20_weekly": Trail stop below the rising 20-week EMA
+runner_trailing_method: "weekly_base_low"
+
+# Maximum holding period in trading days (~9 months = 180 trading days):
+max_holding_days: 180
