@@ -15,6 +15,7 @@ Clean UI with Dynamic Theme Switcher (🌙 Dark / ☀️ Light).
 
 import json
 from pathlib import Path
+import textwrap
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -31,7 +32,7 @@ from engine.gatekeeper import (
 from engine.scanner import export_scan_to_json, run_full_scan
 from engine.telegram import format_telegram_digest, send_telegram_message
 
-APP_VERSION = "6.0"
+APP_VERSION = "7.0"
 
 st.set_page_config(
     page_title="AVP Swing Intelligence",
@@ -273,19 +274,21 @@ latest_date_str = df_all["Date"].max().strftime("%d-%b-%Y")
 status_badge_color = accent_green if gatekeeper.status == "PASS" else (accent_amber if gatekeeper.status == "CAUTION" else accent_rose)
 with col_head_left:
     st.markdown(
-        f"""
-        <div class="top-header-bar">
-            <div>
-                <span class="brand-title">📈 AVP SWING INTELLIGENCE</span>
-                <div class="brand-subtitle">ATH & DEMA Quantitative Terminal • 50 DEMA (₹1k Risk) | 200 EMA (₹2k Risk) • Data As-Of: <b style="color:{text_primary};">{latest_date_str}</b></div>
-            </div>
-            <div>
-                <div style="display: inline-block; background-color: {badge_bg}; border: 1.5px solid {status_badge_color}; border-radius: 20px; padding: 4px 14px; font-weight: 700; font-size: 0.88em; color: {status_badge_color};">
-                    ● Market: {gatekeeper.status} ({gatekeeper.score}/10)
+        textwrap.dedent(
+            f"""
+            <div class="top-header-bar">
+                <div>
+                    <span class="brand-title">📈 AVP SWING INTELLIGENCE</span>
+                    <div class="brand-subtitle">ATH & DEMA Quantitative Terminal • 50 DEMA (₹1k Risk) | 200 EMA (₹2k Risk) • Data As-Of: <b style="color:{text_primary};">{latest_date_str}</b></div>
+                </div>
+                <div>
+                    <div style="display: inline-block; background-color: {badge_bg}; border: 1.5px solid {status_badge_color}; border-radius: 20px; padding: 4px 14px; font-weight: 700; font-size: 0.88em; color: {status_badge_color};">
+                        ● Market: {gatekeeper.status} ({gatekeeper.score}/10)
+                    </div>
                 </div>
             </div>
-        </div>
-        """,
+            """
+        ).strip(),
         unsafe_allow_html=True,
     )
 
@@ -310,16 +313,18 @@ above_50_pills = "".join([f'<span class="sector-pill pill-green">🟢 {s.index_n
 above_200_pills = "".join([f'<span class="sector-pill pill-blue">🔵 {s.index_name} ({s.pct_from_200_ema:+.1f}%)</span>' for s in sectors_above_200])
 
 st.markdown(
-    f"""
-    <div class="sector-radar-box">
-        <div class="radar-title">🔥 Leading Sectors Today (Top 3 vs 50 DEMA)</div>
-        <div style="margin-bottom: 12px;">{top_3_html}</div>
-        <div style="font-size: 0.85em; font-weight: 700; color: {text_primary}; margin-bottom: 4px;">🟢 Sectors Above 50 DEMA (Short-Term Momentum):</div>
-        <div style="margin-bottom: 10px;">{above_50_pills if above_50_pills else '<span style=\"color:' + text_secondary + '; font-size:0.85em;\">None currently</span>'}</div>
-        <div style="font-size: 0.85em; font-weight: 700; color: {text_primary}; margin-bottom: 4px;">🔵 Sectors Above 200 EMA (Long-Term Bullish Trend):</div>
-        <div>{above_200_pills if above_200_pills else '<span style=\"color:' + text_secondary + '; font-size:0.85em;\">None currently</span>'}</div>
-    </div>
-    """,
+    textwrap.dedent(
+        f"""
+        <div class="sector-radar-box">
+            <div class="radar-title">🔥 Leading Sectors Today (Top 3 vs 50 DEMA)</div>
+            <div style="margin-bottom: 12px;">{top_3_html}</div>
+            <div style="font-size: 0.85em; font-weight: 700; color: {text_primary}; margin-bottom: 4px;">🟢 Sectors Above 50 DEMA (Short-Term Momentum):</div>
+            <div style="margin-bottom: 10px;">{above_50_pills if above_50_pills else '<span style=\"color:' + text_secondary + '; font-size:0.85em;\">None currently</span>'}</div>
+            <div style="font-size: 0.85em; font-weight: 700; color: {text_primary}; margin-bottom: 4px;">🔵 Sectors Above 200 EMA (Long-Term Bullish Trend):</div>
+            <div>{above_200_pills if above_200_pills else '<span style=\"color:' + text_secondary + '; font-size:0.85em;\">None currently</span>'}</div>
+        </div>
+        """
+    ).strip(),
     unsafe_allow_html=True,
 )
 
@@ -402,7 +407,8 @@ with tab1:
             else ""
         )
 
-        st.markdown(
+        pat_summary = str(getattr(r, "pattern_summary", "")).replace(">", "&gt;")
+        card_html = textwrap.dedent(
             f"""
             <div class="trade-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
@@ -418,7 +424,7 @@ with tab1:
                 </div>
                 <div style="font-size: 0.88em; color: {text_secondary}; margin-bottom: 8px; line-height: 1.4;">
                     Sector: <b style="color: {text_primary};">{sec_name} ({sec_status})</b> • Strategy: <b style="color: {text_primary};">{strat_label}</b>
-                    <div style="color: {text_secondary}; font-style: italic; margin-top: 2px;">{getattr(r, 'pattern_summary', '')}</div>
+                    <div style="color: {text_secondary}; font-style: italic; margin-top: 2px;">{pat_summary}</div>
                 </div>
                 <div class="metric-strip">
                     <div class="metric-cell">
@@ -447,9 +453,9 @@ with tab1:
                     </div>
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            """
+        ).strip()
+        st.markdown(card_html, unsafe_allow_html=True)
 
     if not results:
         st.info("No stocks currently match the setup criteria. Market may be extended or in consolidation.")
@@ -559,17 +565,19 @@ with tab3:
     for s in sorted(pure_sectors_list, key=lambda x: x.pct_from_50_dema, reverse=True):
         st_color = accent_green if s.is_above_50_dema else (accent_amber if s.is_above_200_ema else accent_rose)
         st.markdown(
-            f"""
-            <div style="background-color: {bg_card}; border-left: 5px solid {st_color}; border: 1px solid {border_color}; border-left-width: 5px; padding: 12px 16px; margin-bottom: 8px; border-radius: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-                    <span style="font-weight: 800; font-size: 1.05em; color: {text_primary};">{s.index_name} <span style="font-weight: 500; color: {text_secondary}; font-size: 0.85em;">({s.symbol})</span></span>
-                    <span style="font-weight: 800; color: {st_color};">{s.pct_from_50_dema:+.1f}% vs 50 DEMA</span>
+            textwrap.dedent(
+                f"""
+                <div style="background-color: {bg_card}; border-left: 5px solid {st_color}; border: 1px solid {border_color}; border-left-width: 5px; padding: 12px 16px; margin-bottom: 8px; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-weight: 800; font-size: 1.05em; color: {text_primary};">{s.index_name} <span style="font-weight: 500; color: {text_secondary}; font-size: 0.85em;">({s.symbol})</span></span>
+                        <span style="font-weight: 800; color: {st_color};">{s.pct_from_50_dema:+.1f}% vs 50 DEMA</span>
+                    </div>
+                    <div style="font-size: 0.88em; color: {text_secondary}; margin-top: 4px;">
+                        Close: ₹{s.close:,.2f} • 50 DEMA: ₹{s.dema_50:,.2f} • 200 EMA: ₹{s.ema_200:,.2f} ({s.pct_from_200_ema:+.1f}%) • State: <b style="color: {st_color};">{s.trend_state}</b>
+                    </div>
                 </div>
-                <div style="font-size: 0.88em; color: {text_secondary}; margin-top: 4px;">
-                    Close: ₹{s.close:,.2f} • 50 DEMA: ₹{s.dema_50:,.2f} • 200 EMA: ₹{s.ema_200:,.2f} ({s.pct_from_200_ema:+.1f}%) • State: <b style="color: {st_color};">{s.trend_state}</b>
-                </div>
-            </div>
-            """,
+                """
+            ).strip(),
             unsafe_allow_html=True,
         )
 
@@ -581,16 +589,18 @@ with tab3:
         for s in sorted(broad_market_list, key=lambda x: x.pct_from_50_dema, reverse=True):
             st_color = accent_green if s.is_above_50_dema else (accent_amber if s.is_above_200_ema else accent_rose)
             st.markdown(
-                f"""
-                <div style="background-color: {bg_card}; border-left: 5px solid {st_color}; border: 1px solid {border_color}; border-left-width: 5px; padding: 12px 16px; margin-bottom: 8px; border-radius: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-                        <span style="font-weight: 800; font-size: 1.05em; color: {text_primary};">{s.index_name} <span style="font-weight: 500; color: {text_secondary}; font-size: 0.85em;">({s.symbol})</span></span>
-                        <span style="font-weight: 800; color: {st_color};">{s.pct_from_50_dema:+.1f}% vs 50 DEMA</span>
+                textwrap.dedent(
+                    f"""
+                    <div style="background-color: {bg_card}; border-left: 5px solid {st_color}; border: 1px solid {border_color}; border-left-width: 5px; padding: 12px 16px; margin-bottom: 8px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+                            <span style="font-weight: 800; font-size: 1.05em; color: {text_primary};">{s.index_name} <span style="font-weight: 500; color: {text_secondary}; font-size: 0.85em;">({s.symbol})</span></span>
+                            <span style="font-weight: 800; color: {st_color};">{s.pct_from_50_dema:+.1f}% vs 50 DEMA</span>
+                        </div>
+                        <div style="font-size: 0.88em; color: {text_secondary}; margin-top: 4px;">
+                            Close: ₹{s.close:,.2f} • 50 DEMA: ₹{s.dema_50:,.2f} • 200 EMA: ₹{s.ema_200:,.2f} ({s.pct_from_200_ema:+.1f}%) • State: <b style="color: {st_color};">{s.trend_state}</b>
+                        </div>
                     </div>
-                    <div style="font-size: 0.88em; color: {text_secondary}; margin-top: 4px;">
-                        Close: ₹{s.close:,.2f} • 50 DEMA: ₹{s.dema_50:,.2f} • 200 EMA: ₹{s.ema_200:,.2f} ({s.pct_from_200_ema:+.1f}%) • State: <b style="color: {st_color};">{s.trend_state}</b>
-                    </div>
-                </div>
-                """,
+                    """
+                ).strip(),
                 unsafe_allow_html=True,
             )

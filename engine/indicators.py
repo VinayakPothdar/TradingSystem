@@ -219,7 +219,7 @@ def detect_higher_low_pattern(df: pd.DataFrame, ma_col: str, lookback: int = 25,
             "t2_price": round(float(t2_price), 2),
             "jump_pct": round(jump_pct * 100.0, 1),
             "hl_buffer_pct": hl_buffer_pct,
-            "pattern_summary": f"HL: ₹{t2_price:.1f} > T1: ₹{t1_price:.1f} (+{hl_buffer_pct}%)",
+            "pattern_summary": f"HL: ₹{t2_price:.1f} &gt; T1: ₹{t1_price:.1f} (+{hl_buffer_pct:.1f}%)",
         }
 
     return {"has_higher_low": False, "grade": "A"}
