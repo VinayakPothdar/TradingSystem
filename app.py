@@ -31,7 +31,7 @@ from engine.gatekeeper import (
 from engine.scanner import export_scan_to_json, run_full_scan
 from engine.telegram import format_telegram_digest, send_telegram_message
 
-APP_VERSION = "5.0"
+APP_VERSION = "6.0"
 
 st.set_page_config(
     page_title="AVP Swing Intelligence",
@@ -267,6 +267,7 @@ def get_market_data(df_all):
 
 df_all = get_cached_candles(APP_VERSION)
 gatekeeper, sector_regimes, top_3_sectors, sectors_above_50, sectors_above_200, sectors_below_200 = get_market_data(df_all)
+latest_date_str = df_all["Date"].max().strftime("%d-%b-%Y")
 
 # --- MINIMALIST HEADER ---
 status_badge_color = accent_green if gatekeeper.status == "PASS" else (accent_amber if gatekeeper.status == "CAUTION" else accent_rose)
@@ -276,7 +277,7 @@ with col_head_left:
         <div class="top-header-bar">
             <div>
                 <span class="brand-title">📈 AVP SWING INTELLIGENCE</span>
-                <div class="brand-subtitle">ATH & DEMA Quantitative Terminal • 50 DEMA (₹1k Risk) | 200 EMA (₹2k Risk)</div>
+                <div class="brand-subtitle">ATH & DEMA Quantitative Terminal • 50 DEMA (₹1k Risk) | 200 EMA (₹2k Risk) • Data As-Of: <b style="color:{text_primary};">{latest_date_str}</b></div>
             </div>
             <div>
                 <div style="display: inline-block; background-color: {badge_bg}; border: 1.5px solid {status_badge_color}; border-radius: 20px; padding: 4px 14px; font-weight: 700; font-size: 0.88em; color: {status_badge_color};">
@@ -329,12 +330,17 @@ tab1, tab2, tab3 = st.tabs(["🔍 Live Scanner", "📈 Backtesting Hub", "🛡�
 # TAB 1: LIVE SCANNER
 # ==========================================
 with tab1:
-    col_c1, col_c2, col_c3 = st.columns([1, 1, 1])
+    col_c1, col_c2, col_c3 = st.columns([1.2, 1, 0.8])
     with col_c1:
         selected_strategy = st.selectbox(
-            "Strategy Filter",
-            options=["COMBINED", "50_DEMA", "200_EMA"],
-            format_func=lambda x: "All Strategies (50 DEMA & 200 EMA)" if x == "COMBINED" else STRATEGIES[x].name,
+            "Strategy View",
+            options=["COMBINED", "DEDUPLICATED", "50_DEMA", "200_EMA"],
+            format_func=lambda x: {
+                "COMBINED": "Grouped by Strategy (50 DEMA & 200 EMA)",
+                "DEDUPLICATED": "1 Card Per Stock (Deduplicated • Best Setup)",
+                "50_DEMA": "50 DEMA High-Momentum Only (₹1,000 Risk)",
+                "200_EMA": "200 EMA Deep Value Only (₹2,000 Risk)",
+            }[x],
         )
     with col_c2:
         grade_filter = st.radio(
@@ -354,7 +360,7 @@ with tab1:
 
     if "scan_results" not in st.session_state or run_scan_btn:
         with st.spinner("Scanning Nifty 500 stocks across True ATH, DEMA pullbacks & Sectors..."):
-            strat_arg = None if selected_strategy == "COMBINED" else selected_strategy
+            strat_arg = None if selected_strategy in ["COMBINED", "DEDUPLICATED"] else selected_strategy
             raw_results = run_full_scan(df_all, strategy_id=strat_arg)
             st.session_state["scan_results"] = raw_results
 
@@ -364,72 +370,116 @@ with tab1:
                 st.success("Alert sent to Telegram!")
 
     results = st.session_state.get("scan_results", [])
+
+    # Filter specific strategy if selected
+    if selected_strategy in ["50_DEMA", "200_EMA"]:
+        results = [r for r in results if r.strategy_id == selected_strategy]
+
     if grade_filter == "APLUS_ONLY":
         results = [r for r in results if getattr(r, "grade", "A") == "A+"]
 
-    st.markdown(f"### **Found {len(results)} Qualifying Setups**")
+    # Detect dual setups (qualifies for both 50 DEMA and 200 EMA)
+    all_current_raw = st.session_state.get("scan_results", [])
+    sym_counts = {}
+    for r in all_current_raw:
+        sym_counts[r.symbol] = sym_counts.get(r.symbol, 0) + 1
+    dual_symbols = {sym for sym, count in sym_counts.items() if count > 1}
+
+    def render_trade_card(r):
+        grade_val = getattr(r, "grade", "A")
+        badge_class = "grade-badge-aplus" if grade_val == "A+" else "grade-badge-a"
+        short_grade = "🟢 A+ Confirmed" if grade_val == "A+" else "🟡 Grade A"
+        respect_pct = getattr(r, "respect_score_pct", 50)
+        strat_id = getattr(r, "strategy_id", "50_DEMA")
+        strat_label = "50 DEMA (₹1k Risk)" if strat_id == "50_DEMA" else "200 EMA (₹2k Risk)"
+        ind_name = getattr(r, "industry", "General")
+        sec_name = getattr(r, "sector_name", "Nifty 50")
+        sec_status = getattr(r, "sector_status_label", "⚪ Sector Info N/A")
+        is_dual = r.symbol in dual_symbols
+        dual_badge = (
+            '<span style="background-color: rgba(147, 51, 234, 0.18); color: #C084FC; border: 1px solid #A855F7; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: 700; margin-left: 6px;">⚡ Dual Setup (50+200)</span>'
+            if is_dual
+            else ""
+        )
+
+        st.markdown(
+            f"""
+            <div class="trade-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;">
+                        <span class="stock-ticker">{r.symbol}</span>
+                        <span class="industry-tag">● {ind_name}</span>
+                        {dual_badge}
+                    </div>
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                        <span class="{badge_class}">{short_grade}</span>
+                        <span class="respect-badge">Respect: {respect_pct}%</span>
+                    </div>
+                </div>
+                <div style="font-size: 0.88em; color: {text_secondary}; margin-bottom: 8px; line-height: 1.4;">
+                    Sector: <b style="color: {text_primary};">{sec_name} ({sec_status})</b> • Strategy: <b style="color: {text_primary};">{strat_label}</b>
+                    <div style="color: {text_secondary}; font-style: italic; margin-top: 2px;">{getattr(r, 'pattern_summary', '')}</div>
+                </div>
+                <div class="metric-strip">
+                    <div class="metric-cell">
+                        <span class="m-label">Buy Above (Stop-Limit)</span>
+                        <span class="m-value m-green">₹{r.entry_price:,.2f}</span>
+                    </div>
+                    <div class="metric-cell">
+                        <span class="m-label">Stop-Loss</span>
+                        <span class="m-value m-rose">₹{r.stop_loss_price:,.2f} ({r.risk_pct:.1f}%)</span>
+                    </div>
+                    <div class="metric-cell">
+                        <span class="m-label">1R Sizing</span>
+                        <span class="m-value m-amber">{r.quantity} shares</span>
+                    </div>
+                    <div class="metric-cell">
+                        <span class="m-label">Total Risk</span>
+                        <span class="m-value">₹{r.actual_risk_amount:,.0f}</span>
+                    </div>
+                    <div class="metric-cell">
+                        <span class="m-label">BE Trigger (+1.5R)</span>
+                        <span class="m-value">₹{r.breakeven_trigger_price:,.2f}</span>
+                    </div>
+                    <div class="metric-cell">
+                        <span class="m-label">Target (+2.0R)</span>
+                        <span class="m-value m-green">₹{r.target_price:,.2f}</span>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     if not results:
         st.info("No stocks currently match the setup criteria. Market may be extended or in consolidation.")
-    else:
+    elif selected_strategy == "DEDUPLICATED":
+        seen = set()
+        deduped = []
         for r in results:
-            grade_val = getattr(r, "grade", "A")
-            badge_class = "grade-badge-aplus" if grade_val == "A+" else "grade-badge-a"
-            short_grade = "🟢 A+ Confirmed" if grade_val == "A+" else "🟡 Grade A"
-            respect_pct = getattr(r, "respect_score_pct", 50)
-            strat_id = getattr(r, "strategy_id", "50_DEMA")
-            strat_label = "50 DEMA (₹1k Risk)" if strat_id == "50_DEMA" else "200 EMA (₹2k Risk)"
-            ind_name = getattr(r, "industry", "General")
-            sec_name = getattr(r, "sector_name", "Nifty 50")
-            sec_status = getattr(r, "sector_status_label", "⚪ Sector Info N/A")
-
-            st.markdown(
-                f"""
-                <div class="trade-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
-                        <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;">
-                            <span class="stock-ticker">{r.symbol}</span>
-                            <span class="industry-tag">● {ind_name}</span>
-                        </div>
-                        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
-                            <span class="{badge_class}">{short_grade}</span>
-                            <span class="respect-badge">Respect: {respect_pct}%</span>
-                        </div>
-                    </div>
-                    <div style="font-size: 0.88em; color: {text_secondary}; margin-bottom: 8px; line-height: 1.4;">
-                        Sector: <b style="color: {text_primary};">{sec_name} ({sec_status})</b> • Strategy: <b style="color: {text_primary};">{strat_label}</b>
-                        <div style="color: {text_secondary}; font-style: italic; margin-top: 2px;">{getattr(r, 'pattern_summary', '')}</div>
-                    </div>
-                    <div class="metric-strip">
-                        <div class="metric-cell">
-                            <span class="m-label">Buy Above (Stop-Limit)</span>
-                            <span class="m-value m-green">₹{r.entry_price:,.2f}</span>
-                        </div>
-                        <div class="metric-cell">
-                            <span class="m-label">Stop-Loss</span>
-                            <span class="m-value m-rose">₹{r.stop_loss_price:,.2f} ({r.risk_pct:.1f}%)</span>
-                        </div>
-                        <div class="metric-cell">
-                            <span class="m-label">1R Sizing</span>
-                            <span class="m-value m-amber">{r.quantity} shares</span>
-                        </div>
-                        <div class="metric-cell">
-                            <span class="m-label">Total Risk</span>
-                            <span class="m-value">₹{r.actual_risk_amount:,.0f}</span>
-                        </div>
-                        <div class="metric-cell">
-                            <span class="m-label">BE Trigger (+1.5R)</span>
-                            <span class="m-value">₹{r.breakeven_trigger_price:,.2f}</span>
-                        </div>
-                        <div class="metric-cell">
-                            <span class="m-label">Target (+2.0R)</span>
-                            <span class="m-value m-green">₹{r.target_price:,.2f}</span>
-                        </div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            if r.symbol not in seen:
+                seen.add(r.symbol)
+                deduped.append(r)
+        st.markdown(f"### **Found {len(deduped)} Unique Stocks**")
+        for r in deduped:
+            render_trade_card(r)
+    elif selected_strategy == "COMBINED":
+        r_50 = [r for r in results if r.strategy_id == "50_DEMA"]
+        r_200 = [r for r in results if r.strategy_id == "200_EMA"]
+        if r_50:
+            st.markdown(f"### 🔥 **50 DEMA High-Momentum Swings** ({len(r_50)} Setups • 1R = ₹1,000)")
+            for r in r_50:
+                render_trade_card(r)
+        if r_200:
+            if r_50:
+                st.markdown("<div style='margin-top: 24px;'></div>", unsafe_allow_html=True)
+            st.markdown(f"### 🛡️ **200 EMA Deep Value Swings** ({len(r_200)} Setups • 1R = ₹2,000)")
+            for r in r_200:
+                render_trade_card(r)
+    else:
+        st.markdown(f"### **Found {len(results)} Qualifying Setups**")
+        for r in results:
+            render_trade_card(r)
 
 # ==========================================
 # TAB 2: BACKTESTING HUB

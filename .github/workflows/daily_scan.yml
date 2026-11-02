@@ -36,5 +36,5 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add data/latest_setups.json || true
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(data): update daily swing setups [skip ci]" && git push)
+          git add data/latest_setups.json data/historical_candles.parquet || true
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(data): update daily swing setups and candles [skip ci]" && git push)

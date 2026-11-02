@@ -234,7 +234,14 @@ def run_full_scan(df_all: pd.DataFrame, strategy_id: Optional[str] = None) -> Li
 
     for strat in strategies_to_run:
         for sym in symbols:
-            if str(sym).startswith("^"):
+            sym_str = str(sym).upper()
+            if (
+                sym_str.startswith("^")
+                or "NIFTY" in sym_str
+                or "CNX" in sym_str
+                or "CRSLDX" in sym_str
+                or "DUMMY" in sym_str
+            ):
                 continue
             stock_df = df_all[df_all["Symbol"] == sym].sort_values("Date").reset_index(drop=True)
             res = scan_single_stock(stock_df, str(sym), strat, industry_map, sector_regimes)

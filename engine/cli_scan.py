@@ -16,7 +16,7 @@ from pathlib import Path
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from engine.data import load_all_candles, PARQUET_FILE, DATA_DIR
+from engine.data import load_all_candles, sync_fresh_candles_to_parquet, PARQUET_FILE, DATA_DIR
 from engine.gatekeeper import compute_gatekeeper_score
 from engine.scanner import export_scan_to_json, run_full_scan
 from engine.telegram import format_telegram_digest, send_telegram_message
@@ -27,9 +27,11 @@ def main():
     print("RUNNING DAILY SWING SCANNER (50 DEMA & 200 EMA)")
     print("==================================================")
 
-    # 1. Load historical candles
-    df_all = load_all_candles()
-    print(f"Loaded {len(df_all):,} historical candles from Parquet.")
+    # 1. Sync & Load historical candles
+    print("Syncing fresh candles from Yahoo Finance...")
+    df_all = sync_fresh_candles_to_parquet()
+    latest_date_str = df_all["Date"].max().strftime("%Y-%m-%d")
+    print(f"Loaded {len(df_all):,} historical candles from Parquet (As of {latest_date_str}).")
 
     # 2. Gatekeeper regime
     indices_dict = {}

@@ -143,3 +143,64 @@ def fetch_fresh_tail(symbols: List[str], start_date: str) -> Dict[str, pd.DataFr
         return result
     except Exception:
         return {}
+
+
+def sync_fresh_candles_to_parquet(lookback_days: int = 15) -> pd.DataFrame:
+    """
+    Downloads fresh candles up to today for all Nifty 500 stocks and key indices,
+    merges them with historical_candles.parquet, and saves the updated parquet file.
+    """
+    if yf is None:
+        return load_all_candles()
+
+    df_all = load_all_candles()
+    stock_syms = load_nifty500_symbols()
+    index_syms = [
+        "^NSEI", "^NSEBANK", "^CNXPSUBANK", "NIFTY_FIN_SERVICE.NS", "^CNXIT",
+        "^CNXAUTO", "^CNXPHARMA", "^CNXFMCG", "^CNXMETAL", "^CNXREALTY",
+        "^CNXENERGY", "^CNXINFRA", "^CNXPSE", "^CNXCONSUM", "^CNXMNC",
+        "^NSEMDCP50", "NIFTYSMLCAP250", "^CNX100", "^CNX200", "^CRSLDX", "^INDIAVIX"
+    ]
+
+    all_syms = list(set(stock_syms + index_syms))
+    tickers_map = {s: s if s.startswith("^") or s.endswith(".NS") else f"{s}.NS" for s in all_syms}
+    tickers = list(tickers_map.values())
+
+    max_date = df_all["Date"].max()
+    start_date = (pd.to_datetime(max_date) - pd.Timedelta(days=lookback_days)).strftime("%Y-%m-%d")
+
+    try:
+        data = yf.download(tickers, start=start_date, progress=False, group_by="ticker", threads=True)
+        new_records = []
+        for sym, tick in tickers_map.items():
+            clean_sym = sym.replace(".NS", "").upper()
+            try:
+                if hasattr(data.columns, "levels") and tick in data.columns.levels[0]:
+                    sub = data[tick].dropna(subset=["Close"]).copy()
+                    if not sub.empty:
+                        sub = sub.reset_index()
+                        sub["Date"] = pd.to_datetime(sub["Date"])
+                        sub["Symbol"] = clean_sym
+                        cols = ["Symbol", "Date", "Open", "High", "Low", "Close", "Volume"]
+                        avail = [c for c in cols if c in sub.columns]
+                        sub = sub[avail]
+                        for c in ["Open", "High", "Low", "Close"]:
+                            if c in sub.columns:
+                                sub[c] = sub[c].astype(np.float32)
+                        if "Volume" in sub.columns:
+                            sub["Volume"] = sub["Volume"].fillna(0).astype(np.int64)
+                        new_records.append(sub)
+            except Exception:
+                continue
+
+        if new_records:
+            new_df = pd.concat(new_records, ignore_index=True)
+            combined = pd.concat([df_all, new_df], ignore_index=True)
+            combined = combined.drop_duplicates(subset=["Symbol", "Date"], keep="last")
+            combined = combined.sort_values(["Symbol", "Date"]).reset_index(drop=True)
+            combined.to_parquet(PARQUET_FILE, engine="pyarrow", compression="zstd", index=False)
+            return combined
+    except Exception:
+        pass
+
+    return df_all
